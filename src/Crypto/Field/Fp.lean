@@ -1,19 +1,21 @@
 namespace Crypto.Field
 
 
-private def gcdExtended (a : Nat) (b : Nat) : Nat × Nat × Nat :=
+private def gcdExtended (a : Nat) (b : Nat) : Int × Int × Int :=
   if a = 0
-    then ⟨ b, 0, 1 ⟩
-    else let ⟨ gcd, x', y' ⟩ := gcdExtended (b % a) a
+    then ⟨ b , 0 , 1 ⟩
+    else let ⟨ gcd , x' , y' ⟩ := gcdExtended (b % a) a
          let x := y' - (b / a) * x'
          let y := x'
-         ⟨ gcd, x, y ⟩
+         ⟨ gcd , x , y ⟩
 termination_by a
 decreasing_by
   simp_wf
   apply Nat.mod_lt
   apply Nat.zero_lt_of_ne_zero
+  simp
   assumption
+
 
 private def modExp (m : Nat) (x : Nat) (n : Nat) : Nat :=
   if n = 0
@@ -27,41 +29,27 @@ private def modExp (m : Nat) (x : Nat) (n : Nat) : Nat :=
 structure Fp (p : Nat) where
   private mkUnsafe ::
   val : Nat
-deriving Repr
+deriving Repr, DecidableEq, BEq
 
 namespace Fp
 
   def mk (x : Nat) : Fp p :=
-    Fp.mkUnsafe $ x % p
+    ⟨ x % p ⟩
 
   def canonical (x : Fp p) : Prop :=
     x.val < p
-
-  def nonzero (x : Fp p) : Prop :=
-    ¬ x.val % p = 0
 
   def invertible (x : Fp p) : Prop :=
     let ⟨ gcd , _ , _ ⟩ := gcdExtended x.val p
     gcd = 1
 
-  /-
-  theorem nonzero_invertible (x : Fp p) : nonzero x → invertible x := by
-    sorry
-
-  theorem invertible_nonzero (x : Fp p) : invertible x → nonzero x := by
-    sorry
-  -/
-
   def inverse (x : Fp p) : Option (Fp p) :=
-    let ⟨ gcd , y , _ ⟩ := gcdExtended x.val p
+    let ⟨ gcd , xi , _ ⟩ := gcdExtended x.val p
     if gcd = 1
-      then some ⟨ y ⟩
+      then some ⟨ (xi % p).toNat ⟩
       else none
 
 end Fp
-
-instance : BEq (Fp p) where
-  beq x y := x.val % p == y.val % p
 
 instance : OfNat (Fp p) n where
   ofNat := Fp.mk n
@@ -70,20 +58,55 @@ instance : Add (Fp p) where
   add x y := ⟨ (x.val + y.val) % p ⟩
 
 instance : Neg (Fp p) where
-  neg x := ⟨ (p - x.val) % p ⟩
+  neg x := ⟨ p - x.val % p ⟩
 
 instance : Sub (Fp p) where
-  sub x y := ⟨ (x.val - y.val) % p ⟩
+  sub x y := ⟨ (p + x.val - y.val) % p ⟩
 
 instance : Mul (Fp p) where
   mul x y := ⟨ (x.val * y.val) % p ⟩
 
-/-
-instance : Div (Fp p) where
-  div x y := x * Fp.inverse y
--/
-
 instance : Pow (Fp p) Nat where
   pow x n := ⟨ modExp p x.val n ⟩
+
+-- FIXME: Unsafe!
+instance : Div (Fp p) where
+  div x y :=
+    match Fp.inverse y with
+    | some yi => x * yi
+    | none => 0
+
+instance : HDiv (Fp p) (Fp p) (Option (Fp p)) where
+  hDiv x y := Functor.map (Mul.mul x) $ Fp.inverse y
+
+structure NonZeroFp (p : Nat) where
+  private mkUnsafe ::
+  val : Nat
+  nonzero : ¬ val % p = 0
+
+namespace NonZeroFp
+
+  def mk (x : Fp p) (h : ¬ x.val % p = 0) : NonZeroFp p :=
+    NonZeroFp.mkUnsafe x.val h
+
+  def fp (x : NonZeroFp p) : Fp p :=
+    ⟨ x.val ⟩
+
+/-
+  private theorem invertible (x : NonZeroFp p) : (gcdExtended x.val p).fst = 1 := by
+    rw [gcdExtended]
+    simp
+    sorry
+-/
+  -- FIXME: Strengthen this to yield `NonZeroFp p` instead of `Fp p`.
+  def inverse (x : NonZeroFp p) : Fp p :=
+    let ⟨ _ , xi , _⟩ := gcdExtended x.val p
+    ⟨ (xi % p).toNat ⟩
+
+end NonZeroFp
+
+instance : HDiv (Fp p) (NonZeroFp p) (Fp p) where
+  hDiv x y := x * y.inverse
+
 
 end Crypto.Field
