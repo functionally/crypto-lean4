@@ -66,6 +66,7 @@ example : testMul 5782975327 ⟨1,6⟩ 2 3 6 3212764070 2141842716 := by rfl
 -- https://andrea.corbellini.name/ecc/interactive/modk-mul.html
 example : testMul 97 ⟨2,3⟩ 2 3 6 80 10 := by rfl
 example : testMul 97 ⟨2,3⟩ 4 3 6 3 91 := by rfl
+example : testMul 97 ⟨2,3⟩ 6 3 6 3 6 := by rfl
 
 
 end Crypto.EllipticCurve.Test

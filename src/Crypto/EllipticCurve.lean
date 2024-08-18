@@ -4,10 +4,12 @@ namespace Crypto
 structure EllipticCurve (F : Type) where
   a : F
   b : F
-deriving Repr, BEq
+deriving Repr, DecidableEq, BEq
 
 
 namespace EllipticCurve
+
+  variable {F : Type}
 
 
   def wellFormed [OfNat F 0] [OfNat F 4] [OfNat F 27] [Add F] [Mul F] [Pow F Nat] (ec : EllipticCurve F) : Prop :=
@@ -16,30 +18,31 @@ namespace EllipticCurve
   def wellFormed' [BEq F] [OfNat F 0] [OfNat F 4] [OfNat F 27] [Add F] [Mul F] [Pow F Nat] (ec : EllipticCurve F) : Bool :=
     4 * ec.a^3 + 27 * ec.b^2 != 0
 
-  inductive Point (F : Type) (ec : EllipticCurve F) where
-  | mk : F → F → Point F ec
-  | infinity : Point F ec
+
+  inductive Point (ec : EllipticCurve F) where
+  | mk : F → F → Point ec
+  | infinity : Point ec
   deriving Repr, DecidableEq, BEq
 
   namespace Point
 
-    def onCurve [DecidableEq F] [Add F] [Mul F] [Pow F Nat] : Point (F : Type) (ec : EllipticCurve F) → Prop
+    def onCurve [DecidableEq F] [Add F] [Mul F] [Pow F Nat] : Point (ec : EllipticCurve F) → Prop
     | Point.infinity => True
     | Point.mk x y => y^2 = x^3 + ec.a * x + ec.b
 
-    def onCurve' [DecidableEq F] [Add F] [Mul F] [Pow F Nat] : Point (F : Type) (ec : EllipticCurve F) → Bool
+    def onCurve' [DecidableEq F] [Add F] [Mul F] [Pow F Nat] : Point (ec : EllipticCurve F) → Bool
     | Point.infinity => true
     | Point.mk x y => y^2 == x^3 + ec.a * x + ec.b
 
   end Point
 
   -- https://crypto.stanford.edu/pbc/notes/elliptic/explicit.html
-  instance [OfNat F 0] [OfNat F 2] [OfNat F 3] [BEq F] [Add F] [Sub F] [Mul F] [Div F] [Pow F Nat] [DecidableEq F] : Add (Point F ec) where
+  instance {ec : EllipticCurve F} [OfNat F 0] [OfNat F 2] [OfNat F 3] [BEq F] [Add F] [Sub F] [Mul F] [Div F] [Pow F Nat] [DecidableEq F] : Add (Point ec) where
     add
     | p, Point.infinity => p
     | Point.infinity, q => q
     | Point.mk px py, Point.mk qx qy =>
-        let mkPoint (m : F) : Point F ec :=
+        let mkPoint (m : F) : Point ec :=
               let rx := m^2 - px - qx
               let ry := m * (px - rx) - py
               Point.mk rx ry
@@ -51,15 +54,15 @@ namespace EllipticCurve
                  then Point.infinity
                  else mkPoint $ (qy - py) / (qx - px)
 
-  instance [Neg F] : Neg (Point F ec) where
+  instance {ec : EllipticCurve F} [Neg F] : Neg (Point ec) where
     neg
     | Point.infinity => Point.infinity
     | Point.mk x y => Point.mk x (- y)
 
-  instance [Add (Point F ec)] [Neg (Point F ec)] : Sub (Point F ec) where
+  instance {ec : EllipticCurve F} [Add (Point ec)] [Neg (Point ec)] : Sub (Point ec) where
     sub x y := x + (- y)
 
-  def mulPoint [Add (Point F ec)] (n : Nat) (x : Point F ec) : Point F ec :=
+  def mulPoint {ec : EllipticCurve F} [Add (Point ec)] (n : Nat) (x : Point ec) : Point ec :=
     if n = 0
       then Point.infinity
       else if n = 1
@@ -76,8 +79,22 @@ namespace EllipticCurve
     assumption
     apply Nat.one_lt_two
 
-  instance [Add (Point F ec)]: HMul Nat (Point F ec) (Point F ec) where
+  instance {ec : EllipticCurve F} [Add (Point ec)]: HMul Nat (Point ec) (Point ec) where
     hMul := mulPoint
+
+
+  structure Group (ec : EllipticCurve F) where
+    G : EllipticCurve.Point ec
+    n : Nat
+    h : Nat
+  deriving Repr, DecidableEq, BEq
+
+  def mkGroup {ec : EllipticCurve F} (x : F) (y : F) (n : Nat) (h : Nat) : Group ec :=
+    {
+      G := EllipticCurve.Point.mk x y
+    , n := n
+    , h := h
+    }
 
 
 end EllipticCurve
