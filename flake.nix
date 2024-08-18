@@ -27,7 +27,7 @@
       devShell = pkgs.mkShell {
         buildInputs = [
           pkgs.lean4
-        # pkgs.elan
+          pkgs.elan
         ];
       };
       defaultPackage = pkg.modRoot;

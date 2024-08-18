@@ -6,6 +6,16 @@ package «Crypto» where
 lean_lib «Crypto» where
   srcDir := "src"
 
+/-
+require std from git
+  "https://github.com/leanprover/std4"
+  @ "v4.7.0"
+-/
+
+require mathlib from git
+  "https://github.com/leanprover-community/mathlib4.git"
+  @ "v4.7.0"
+
 @[default_target]
 lean_exe «crypto» where
   root := `Main

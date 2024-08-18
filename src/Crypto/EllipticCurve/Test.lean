@@ -8,17 +8,16 @@ open Crypto.EllipticCurve
 
 namespace Crypto.EllipticCurve.Test
 
-
 def testAdd (n : Nat) (ec : EllipticCurve (Fp n)) (px py qx qy rx ry : Fp n) : Prop :=
-  let p : EllipticCurve.Point (Fp n) ec := EllipticCurve.Point.mk px py
-  let q : EllipticCurve.Point (Fp n) ec := EllipticCurve.Point.mk qx qy
-  let r : EllipticCurve.Point (Fp n) ec := EllipticCurve.Point.mk rx ry
+  let p : EllipticCurve.Point ec := EllipticCurve.Point.mk px py
+  let q : EllipticCurve.Point ec := EllipticCurve.Point.mk qx qy
+  let r : EllipticCurve.Point ec := EllipticCurve.Point.mk rx ry
   p + q = r
 
 def testAdd' (n : Nat) (ec : EllipticCurve (Fp n)) (px py qx qy rx ry : Fp n) :=
-  let p : EllipticCurve.Point (Fp n) ec := EllipticCurve.Point.mk px py
-  let q : EllipticCurve.Point (Fp n) ec := EllipticCurve.Point.mk qx qy
-  let r : EllipticCurve.Point (Fp n) ec := EllipticCurve.Point.mk rx ry
+  let p : EllipticCurve.Point ec := EllipticCurve.Point.mk px py
+  let q : EllipticCurve.Point ec := EllipticCurve.Point.mk qx qy
+  let r : EllipticCurve.Point ec := EllipticCurve.Point.mk rx ry
   p + q == r
 
 -- https://www.cs.purdue.edu/homes/ssw/cs655/ec.pdf
@@ -46,13 +45,13 @@ example : testAdd 7 ⟨3,4⟩ 2 2 5 2 0 5 := by rfl
 example : testAdd 97 ⟨2,3⟩ 3 6 80 10 80 87 := by rfl
 
 def testMul (n : Nat) (ec : EllipticCurve (Fp n)) (k : Nat) (px py rx ry : Fp n) :=
-  let p : EllipticCurve.Point (Fp n) ec := EllipticCurve.Point.mk px py
-  let r : EllipticCurve.Point (Fp n) ec := EllipticCurve.Point.mk rx ry
+  let p : EllipticCurve.Point ec := EllipticCurve.Point.mk px py
+  let r : EllipticCurve.Point ec := EllipticCurve.Point.mk rx ry
   k * p = r
 
 def testMul' (n : Nat) (ec : EllipticCurve (Fp n)) (k : Nat) (px py rx ry : Fp n) :=
-  let p : EllipticCurve.Point (Fp n) ec := EllipticCurve.Point.mk px py
-  let r : EllipticCurve.Point (Fp n) ec := EllipticCurve.Point.mk rx ry
+  let p : EllipticCurve.Point ec := EllipticCurve.Point.mk px py
+  let r : EllipticCurve.Point ec := EllipticCurve.Point.mk rx ry
   Prod.mk (k * p == r)
     $ k * p
 

@@ -89,12 +89,28 @@ namespace EllipticCurve
     h : Nat
   deriving Repr, DecidableEq, BEq
 
-  def mkGroup {ec : EllipticCurve F} (x : F) (y : F) (n : Nat) (h : Nat) : Group ec :=
-    {
-      G := EllipticCurve.Point.mk x y
-    , n := n
-    , h := h
-    }
+  namespace Group
+
+    variable {ec : EllipticCurve F}
+
+    def mkGroup (x : F) (y : F) (n : Nat) (h : Nat) : Group ec :=
+      {
+        G := EllipticCurve.Point.mk x y
+      , n := n
+      , h := h
+      }
+
+    structure KeyPair (g : EllipticCurve.Group ec) where
+      prv : Nat
+      pub : EllipticCurve.Point ec
+    deriving Repr, DecidableEq, BEq
+
+    variable {g : EllipticCurve.Group ec}
+
+    def keyPair [HMul Nat (Point ec) (Point ec)] (prv : Nat) : KeyPair g :=
+      KeyPair.mk prv (prv * g.G)
+
+  end Group
 
 
 end EllipticCurve
