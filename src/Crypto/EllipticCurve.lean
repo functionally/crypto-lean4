@@ -6,6 +6,7 @@ structure EllipticCurve (F : Type) where
   b : F
 deriving Repr, BEq
 
+
 namespace EllipticCurve
 
 
@@ -58,13 +59,25 @@ namespace EllipticCurve
   instance [Add (Point F ec)] [Neg (Point F ec)] : Sub (Point F ec) where
     sub x y := x + (- y)
 
-/-
+  def mulPoint [Add (Point F ec)] (n : Nat) (x : Point F ec) : Point F ec :=
+    if n = 0
+      then Point.infinity
+      else if n = 1
+        then x
+        else let y := mulPoint (n / 2) (x + x)
+             if n % 2 = 1
+               then y + x
+               else y
+  termination_by n
+  decreasing_by
+    simp_wf
+    apply Nat.div_lt_self
+    apply Nat.zero_lt_of_ne_zero
+    assumption
+    apply Nat.one_lt_two
 
-- [ ] Multiplication
-- [ ] Inverse
-- [ ] Zero
-
--/
+  instance [Add (Point F ec)]: HMul Nat (Point F ec) (Point F ec) where
+    hMul := mulPoint
 
 
 end EllipticCurve

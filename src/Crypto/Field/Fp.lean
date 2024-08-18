@@ -21,7 +21,7 @@ private def modExp (m : Nat) (x : Nat) (n : Nat) : Nat :=
   if n = 0
     then 1
     else let y := modExp m (x * x % m) (n / 2)
-         if n % 2 == 1
+         if n % 2 = 1
            then x * y % m
            else y
 
