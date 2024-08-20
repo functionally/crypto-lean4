@@ -10,6 +10,7 @@ import Crypto.ECDH
 import Crypto.ECDSA
 
 import Crypto.Hash
-import Crypto.Hash.SHA512
+import Crypto.Hash.SHA2
+import Crypto.Hash.SHA2.Test
 
 import Crypto.Serial
