@@ -16,6 +16,9 @@ require mathlib from git
   "https://github.com/leanprover-community/mathlib4.git"
   @ "v4.7.0"
 
+require LSpec from git
+  "https://github.com/argumentcomputer/LSpec.git"
+
 @[default_target]
 lean_exe «crypto» where
   root := `Main
