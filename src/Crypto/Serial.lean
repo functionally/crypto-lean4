@@ -13,11 +13,12 @@ instance : Serializable ByteArray where
   decode := some
 
 instance : Serializable String where
-  encode := String.toUTF8
-  decode := some ∘ String.fromUTF8Unchecked
+  encode := ByteArray.mk ∘ Array.mk ∘ List.map (Nat.toUInt8 ∘ Char.toNat) ∘ String.data
+  decode := some ∘ String.fromUTF8Unchecked -- FIXME: Check this.
 
 
 namespace Serial
+
 
   class Words (n : Type) (u : Type) where
     toWords : n → Array u
@@ -26,6 +27,7 @@ namespace Serial
   open Words
 
   -- FIXME: Prove termination.
+  -- FIXME: Test endianness.
   private partial def natFromUInt32s (x : Array UInt32) : Nat :=
     match x.size with
     | 0 => 0
@@ -33,6 +35,7 @@ namespace Serial
     | n => (x.get! 0).toNat <<< 32 + natFromUInt32s (x.extract 1 n)
 
   -- FIXME: Prove termination.
+  -- FIXME: Test endianness.
   private partial def natFromUInt64s (x : Array UInt64) : Nat :=
     match x.size with
     | 0 => 0
@@ -76,34 +79,42 @@ namespace Serial
   termination_by x.size
 
   -- FIXME: Prove termination.
-  private partial def byteArrayFromUInt32s (x : Array UInt32) : Array UInt8 :=
+  private partial def bytesFromUInt32s (x : Array UInt32) : Array UInt8 :=
     let f (y : UInt32) : Array UInt8 :=
           Array.mk
-            $ (List.range 4).map
+            $ (List.range 4).reverse.map
             $ fun i => (y >>> (8 * UInt32.ofNat i)).toUInt8
     match x.size with
     | 0 => Array.empty
     | 1 => f (x.get! 0)
-    | n => f (x.get! 0) ++ byteArrayFromUInt32s (x.extract 1 n)
+    | n => f (x.get! 0) ++ bytesFromUInt32s (x.extract 1 n)
 
   -- FIXME: Prove termination.
-  private partial def byteArrayFromUInt64s (x : Array UInt64) : Array UInt8 :=
+  private partial def bytesFromUInt64s (x : Array UInt64) : Array UInt8 :=
     let f (y : UInt64) : Array UInt8 :=
           Array.mk
-            $ (List.range 8).map
+            $ (List.range 8).reverse.map
             $ fun i => (y >>> (8 * UInt64.ofNat i)).toUInt8
     match x.size with
     | 0 => Array.empty
     | 1 => f (x.get! 0)
-    | n => f (x.get! 0) ++ byteArrayFromUInt64s (x.extract 1 n)
+    | n => f (x.get! 0) ++ bytesFromUInt64s (x.extract 1 n)
 
   instance instWordsByteArrayUInt32 : Words ByteArray UInt32 where
     toWords := bytesToUInt32s ∘ ByteArray.data
-    fromWords := ByteArray.mk ∘ byteArrayFromUInt32s
+    fromWords := ByteArray.mk ∘ bytesFromUInt32s
 
   instance instWordsByteArrayUInt64 : Words ByteArray UInt64 where
     toWords := bytesToUInt64s ∘ ByteArray.data
-    fromWords := ByteArray.mk ∘ byteArrayFromUInt64s
+    fromWords := ByteArray.mk ∘ bytesFromUInt64s
+
+
+  def bytesToHex : ByteArray → String :=
+    "".intercalate
+      ∘ List.map (BitVec.toHex ∘ BitVec.ofNat 8 ∘ UInt8.toNat)
+      ∘ ByteArray.toList
+
+  -- FIXME: Add inverse of `bytesToHex`.
 
 end Serial
 

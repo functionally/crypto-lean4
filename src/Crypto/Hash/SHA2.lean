@@ -275,9 +275,16 @@ def hashBytes (b : Bits) [Inhabited (uint b)] [Add (uint b)] [Ops (uint b)] [Wor
   hashBlocks b ∘ toChunks 16 ∘ pad b
 
 
+def sha (b : Bits) [Words a (uint SHA_224)] [Words a (uint SHA_256)] [Words a (uint SHA_384)] [Words a (uint SHA_512)] : ByteArray → a :=
+  match b with
+  | SHA_224 => fromWords ∘ Array.pop ∘ hashBytes SHA_224
+  | SHA_256 => fromWords ∘ hashBytes SHA_256
+  | SHA_384 => fromWords ∘ Array.pop ∘ Array.pop ∘ hashBytes SHA_384
+  | SHA_512 => fromWords ∘ hashBytes SHA_512
+
 def sha224 [Words a (uint SHA_224)] : ByteArray → a := fromWords ∘ Array.pop ∘ hashBytes SHA_224
 def sha256 [Words a (uint SHA_256)] : ByteArray → a := fromWords ∘ hashBytes SHA_256
-def sha384 [Words a (uint SHA_384)] : ByteArray → a := fromWords ∘ Array.pop ∘ hashBytes SHA_384
+def sha384 [Words a (uint SHA_384)] : ByteArray → a := fromWords ∘ Array.pop ∘ Array.pop ∘ hashBytes SHA_384
 def sha512 [Words a (uint SHA_512)] : ByteArray → a := fromWords ∘ hashBytes SHA_512
 
 
