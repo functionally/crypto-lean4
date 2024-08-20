@@ -1,6 +1,8 @@
 import Crypto.Hash
+import Crypto.Serial
 
 open Crypto
+open Crypto.Serial
 
 
 namespace Crypto.Hash.SHA2
@@ -40,7 +42,7 @@ instance : Add (uint SHA_384) := instAddUInt64
 instance : Add (uint SHA_512) := instAddUInt64
 
 
-def H₀ (b : Bits) : Array (uint b) :=
+private def H₀ (b : Bits) : Array (uint b) :=
   match b with
   | SHA_224 =>
       #[
@@ -132,7 +134,7 @@ private def K64 : Array UInt64 :=
    , 0x4cc5d4becb3e42b6, 0x597f299cfc657e2a, 0x5fcb6fab3ad6faec, 0x6c44198c4a475817
    ]
 
-def Ks (b : Bits) : Array (uint b) :=
+private def Ks (b : Bits) : Array (uint b) :=
   match b with
   | SHA_224 => K32
   | SHA_256 => K32
@@ -235,96 +237,12 @@ def hashBlocks (b : Bits) [Inhabited (uint b)] [Add (uint b)] [Ops (uint b)] (Ms
   List.foldl (hashBlock b) (H₀ b) Ms
 
 
-class Words (n : Type) (u : Type) where
-  toWords : n → Array u
-  fromWords : Array u → n
-
 open Words
-
--- FIXME: Prove termination.
-private partial def natFromUInt32s (x : Array UInt32) : Nat :=
-  match x.size with
-  | 0 => 0
-  | 1 => (x.get! 0).toNat
-  | n => (x.get! 0).toNat <<< 32 + natFromUInt32s (x.extract 1 n)
-
--- FIXME: Prove termination.
-private partial def natFromUInt64s (x : Array UInt64) : Nat :=
-  match x.size with
-  | 0 => 0
-  | 1 => (x.get! 0).toNat
-  | n => (x.get! 0).toNat <<< 64 + natFromUInt64s (x.extract 1 n)
-
-instance instWordsNatUInt32 : Words Nat UInt32 where
-  toWords i :=
-    Array.map UInt32.ofNat
-      #[
-         i / UInt32.size
-       , i % UInt32.size
-       ]
-  fromWords := natFromUInt32s
-
-instance instWordsNatUInt64 : Words Nat UInt64 where
-  toWords i :=
-    Array.map UInt64.ofNat
-      #[
-         i / UInt64.size
-       , i % UInt64.size
-       ]
-  fromWords := natFromUInt64s
 
 instance : Words Nat (uint SHA_224) := instWordsNatUInt32
 instance : Words Nat (uint SHA_256) := instWordsNatUInt32
 instance : Words Nat (uint SHA_384) := instWordsNatUInt64
 instance : Words Nat (uint SHA_512) := instWordsNatUInt64
-
-private def bytesToUInt32s (x : Array UInt8) : Array UInt32 :=
-  let n := x.size
-  let k := 4 - n % 4
-  let u := UInt32.ofNat ∘ Nat.sum $ (List.range $ k).map (fun i => (x.get! i).toNat <<< (8 * (3 - i)))
-  if n < 5
-    then #[u]
-    else #[u] ++ bytesToUInt32s (x.extract 4 n)
-termination_by x.size
-
-private def bytesToUInt64s (x : Array UInt8) : Array UInt64 :=
-  let n := x.size
-  let k := 8 - n % 8
-  let u := UInt64.ofNat ∘ Nat.sum $ (List.range $ k).map (fun i => (x.get! i).toNat <<< (8 * (7 - i)))
-  if n < 9
-    then #[u]
-    else #[u] ++ bytesToUInt64s (x.extract 8 n)
-termination_by x.size
-
--- FIXME: Prove termination.
-private partial def byteArrayFromUInt32s (x : Array UInt32) : Array UInt8 :=
-  let f (y : UInt32) : Array UInt8 :=
-        Array.mk
-          $ (List.range 4).map
-          $ fun i => (y >>> (8 * UInt32.ofNat i)).toUInt8
-  match x.size with
-  | 0 => Array.empty
-  | 1 => f (x.get! 0)
-  | n => f (x.get! 0) ++ byteArrayFromUInt32s (x.extract 1 n)
-
--- FIXME: Prove termination.
-private partial def byteArrayFromUInt64s (x : Array UInt64) : Array UInt8 :=
-  let f (y : UInt64) : Array UInt8 :=
-        Array.mk
-          $ (List.range 8).map
-          $ fun i => (y >>> (8 * UInt64.ofNat i)).toUInt8
-  match x.size with
-  | 0 => Array.empty
-  | 1 => f (x.get! 0)
-  | n => f (x.get! 0) ++ byteArrayFromUInt64s (x.extract 1 n)
-
-instance instWordsByteArrayUInt32 : Words ByteArray UInt32 where
-  toWords := bytesToUInt32s ∘ ByteArray.data
-  fromWords := ByteArray.mk ∘ byteArrayFromUInt32s
-
-instance instWordsByteArrayUInt64 : Words ByteArray UInt64 where
-  toWords := bytesToUInt64s ∘ ByteArray.data
-  fromWords := ByteArray.mk ∘ byteArrayFromUInt64s
 
 instance : Words ByteArray (uint SHA_224) := instWordsByteArrayUInt32
 instance : Words ByteArray (uint SHA_256) := instWordsByteArrayUInt32
@@ -357,10 +275,10 @@ def hashBytes (b : Bits) [Inhabited (uint b)] [Add (uint b)] [Ops (uint b)] [Wor
   hashBlocks b ∘ toChunks 16 ∘ pad b
 
 
-def sha224 : ByteArray → ByteArray := fromWords ∘ Array.pop ∘ hashBytes SHA_224
-def sha256 : ByteArray → ByteArray := fromWords ∘ Array.pop ∘ hashBytes SHA_256
-def sha384 : ByteArray → ByteArray := fromWords ∘ Array.pop ∘ hashBytes SHA_384
-def sha512 : ByteArray → ByteArray := fromWords ∘ Array.pop ∘ hashBytes SHA_512
+def sha224 [Words a (uint SHA_224)] : ByteArray → a := fromWords ∘ Array.pop ∘ hashBytes SHA_224
+def sha256 [Words a (uint SHA_256)] : ByteArray → a := fromWords ∘ hashBytes SHA_256
+def sha384 [Words a (uint SHA_384)] : ByteArray → a := fromWords ∘ Array.pop ∘ hashBytes SHA_384
+def sha512 [Words a (uint SHA_512)] : ByteArray → a := fromWords ∘ hashBytes SHA_512
 
 
 end Crypto.Hash.SHA2

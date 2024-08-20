@@ -1,6 +1,8 @@
 import Crypto.Hash.SHA2
+import Crypto.Serial
 
 open Crypto.Hash.SHA2
+open Crypto.Serial
 
 open Bits
 
@@ -26,7 +28,11 @@ def s0 := hashBytes SHA_224 $ ByteArray.empty
 #eval s0.pop
 #eval t1
 
-#eval sha224 $ ByteArray.mk #[]
+def z : ByteArray := sha224 $ ByteArray.mk #[]
+#eval z
+
+def w : Nat := sha224 $ ByteArray.mk #[]
+#eval w
 
 
 end Crypto.Hash.SHA2.Test
