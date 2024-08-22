@@ -26,6 +26,7 @@ private def modExp (m : Nat) (x : Nat) (n : Nat) : Nat :=
            else y
 
 
+-- FIXME: Consider using `{p : Nat // p > 0}` instead of `Nat`.
 structure Fp (p : Nat) where
   private mkUnsafe ::
   val : Nat
@@ -79,6 +80,8 @@ instance : Div (Fp p) where
 instance : HDiv (Fp p) (Fp p) (Option (Fp p)) where
   hDiv x y := Functor.map (Mul.mul x) $ Fp.inverse y
 
+
+-- FIXME: Remove this or develop it further.
 structure NonZeroFp (p : Nat) where
   private mkUnsafe ::
   val : Nat
