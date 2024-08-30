@@ -1,3 +1,5 @@
+import Mathlib.Control.Random
+
 namespace Crypto.Field
 
 
@@ -77,9 +79,10 @@ instance : Div (Fp p) where
     | some yi => x * yi
     | none => 0
 
+/-
 instance : HDiv (Fp p) (Fp p) (Option (Fp p)) where
   hDiv x y := Functor.map (Mul.mul x) $ Fp.inverse y
-
+-/
 
 -- FIXME: Remove this or develop it further.
 structure NonZeroFp (p : Nat) where
@@ -110,6 +113,13 @@ end NonZeroFp
 
 instance : HDiv (Fp p) (NonZeroFp p) (Fp p) where
   hDiv x y := x * y.inverse
+
+
+instance [Monad m] {p : Nat} : Random m (Fp p) where
+  random :=
+    Fp.mkUnsafe
+      <$> Random.randBound Nat 0 (p - 1)
+            (Nat.zero_le (p - 1))
 
 
 end Crypto.Field

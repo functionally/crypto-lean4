@@ -63,8 +63,8 @@ def testMul (n : Nat) (ec : EllipticCurve (Fp n)) (k : Nat) (px py rx ry : Fp n)
   ) ++ (
     group "https://andrea.corbellini.name/ecc/interactive/modk-mul.html"
         $ test "Case #1" (testMul 97 ⟨2,3⟩ 2 3 6 80 10)
-        $ test "Case #1" (testMul 97 ⟨2,3⟩ 4 3 6 3 91)
-        $ test "Case #1" (testMul 97 ⟨2,3⟩ 6 3 6 3 6)
+        $ test "Case #2" (testMul 97 ⟨2,3⟩ 4 3 6 3 91)
+        $ test "Case #3" (testMul 97 ⟨2,3⟩ 6 3 6 3 6)
   )
 
 
