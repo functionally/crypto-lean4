@@ -44,14 +44,20 @@ def sharePolynomial [∀ i, OfNat F i] [Add F] [Mul F] (parties : Nat) (poly : P
 def share [Monad m] [RandomGen g] [Random m F] [∀ i, OfNat F i] [Add F] [Mul F] (secret : F) (trust : Nat) (parties : Nat) : RandGT g m (List (Share F)) :=
   sharePolynomial parties <$> randomPolynomial secret (trust - 1)
 
-def recover [BEq F] [Add F] [Sub F] [Mul F] [Div F] [∀ i, OfNat F i] (shares : List (Share F)) : F :=
+def coefficients [BEq F] [Add F] [Sub F] [Mul F] [Div F] [∀ i, OfNat F i] (shares : List (Share F)) : List F :=
   let xs := shares.map Share.x
-  let term (x y : F) : F :=
+  let term (x : F) : F :=
     let oth := xs.filter (fun x' => x' != x)
-    let num := y * List.foldl Mul.mul 1 oth
+    let num := List.foldl Mul.mul 1 oth
     let den := List.foldl Mul.mul 1 $ oth.map (fun x' => x' - x)
     num / den
-  List.foldl (fun acc share => acc + term share.x share.y) 0 shares
+  shares.map $ term ∘ Share.x
+
+def interpolate [OfNat F 0] [Add F] [Mul F] (lagranges : List F) (ys : List F) : F :=
+  (List.zipWith Mul.mul lagranges ys).foldl Add.add 0
+
+def recover [BEq F] [Add F] [Sub F] [Mul F] [Div F] [∀ i, OfNat F i] (shares : List (Share F)) : F :=
+  interpolate (coefficients shares) (shares.map Share.y)
 
 
 end Crypto.ShamirSecretSharing
