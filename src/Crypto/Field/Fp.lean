@@ -52,6 +52,11 @@ namespace Fp
       then some ⟨ (xi % p).toNat ⟩
       else none
 
+  def randFp [RandomGen g] [Monad m] {p : Nat} : RandGT g m (Fp p) :=
+    Fp.mkUnsafe
+    <$> Random.randBound Nat 0 (p - 1)
+          (Nat.zero_le (p - 1))
+
 end Fp
 
 instance : OfNat (Fp p) n where
@@ -84,6 +89,10 @@ instance : HDiv (Fp p) (Fp p) (Option (Fp p)) where
   hDiv x y := Functor.map (Mul.mul x) $ Fp.inverse y
 -/
 
+instance [Monad m] {p : Nat} : Random m (Fp p) where
+  random := Fp.randFp
+
+
 -- FIXME: Remove this or develop it further.
 structure NonZeroFp (p : Nat) where
   private mkUnsafe ::
@@ -113,13 +122,6 @@ end NonZeroFp
 
 instance : HDiv (Fp p) (NonZeroFp p) (Fp p) where
   hDiv x y := x * y.inverse
-
-
-instance [Monad m] {p : Nat} : Random m (Fp p) where
-  random :=
-    Fp.mkUnsafe
-      <$> Random.randBound Nat 0 (p - 1)
-            (Nat.zero_le (p - 1))
 
 
 end Crypto.Field

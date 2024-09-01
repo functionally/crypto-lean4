@@ -15,14 +15,18 @@ instance {a : Type} [Random m a] [Monad m] : Random m (Vector a n) where
   random := randVector
 
 
-def randomPolynomial [RandomGen g] [Monad m] [Random m F] [Add F] [Mul F] (a₀ : F) (t : Nat) : RandGT g m (F → F) :=
+structure Polynomial (n : Nat) (F : Type) where
+  private mk ::
+  f : F → F
+
+def randomPolynomial [RandomGen g] [Monad m] [Random m F] [Add F] [Mul F] (a₀ : F) (t : Nat) : RandGT g m (Polynomial t F) :=
   match t with
-  | Nat.zero => pure (fun _ => a₀)
+  | Nat.zero => pure $ Polynomial.mk (fun _ => a₀)
   | Nat.succ t' => do
                      let a₁ ← Random.random
-                     let f ← randomPolynomial a₁ t'
-                     let g x := a₀ + x * f x
-                     pure g
+                     let p ← randomPolynomial a₁ t'
+                     let g x := a₀ + x * p.f x
+                     pure $ Polynomial.mk g
 
 
 structure Share (F : Type) where
@@ -31,14 +35,14 @@ structure Share (F : Type) where
 deriving Repr, DecidableEq, BEq
 
 
-def share [Monad m] [RandomGen g] [Random m F] [∀ i, OfNat F i] [Add F] [Mul F] (secret : F) (trust : Nat) (parties : Nat) : RandGT g m (List (Share F)) :=
-  do
-    let f ← randomPolynomial secret (trust - 1)
-    let sample i :=
-      let j := OfNat.ofNat i + OfNat.ofNat 1
-      Share.mk j (f j)
-    pure $ (List.range parties).map sample
+def sharePolynomial [∀ i, OfNat F i] [Add F] [Mul F] (parties : Nat) (poly : Polynomial trust F) : List (Share F) :=
+  let sample i :=
+    let j := OfNat.ofNat i + OfNat.ofNat 1
+    Share.mk j (poly.f j)
+  (List.range parties).map sample
 
+def share [Monad m] [RandomGen g] [Random m F] [∀ i, OfNat F i] [Add F] [Mul F] (secret : F) (trust : Nat) (parties : Nat) : RandGT g m (List (Share F)) :=
+  sharePolynomial parties <$> randomPolynomial secret (trust - 1)
 
 def recover [BEq F] [Add F] [Sub F] [Mul F] [Div F] [∀ i, OfNat F i] (shares : List (Share F)) : F :=
   let xs := shares.map Share.x
