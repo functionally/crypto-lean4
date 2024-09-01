@@ -3,7 +3,7 @@ import Mathlib.Control.Random
 import Mathlib.Data.Vector
 
 
-namespace Crypto.ShamirSecretSharing
+namespace Crypto.SSS
 
 
 private def randVector [Monad m] {a : Type} [Random m a] [RandomGen g] : RandGT g m (Vector a n) :=
@@ -60,4 +60,4 @@ def recover [BEq F] [Add F] [Sub F] [Mul F] [Div F] [∀ i, OfNat F i] (shares :
   interpolate (coefficients shares) (shares.map Share.y)
 
 
-end Crypto.ShamirSecretSharing
+end Crypto.SSS

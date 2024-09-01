@@ -1,14 +1,14 @@
 import LSpec
 import Crypto.Field.Fp
-import Crypto.ShamirSecretSharing
+import Crypto.SSS
 import Mathlib.Control.Random
 
 open Crypto.Field
-open Crypto.ShamirSecretSharing
+open Crypto.SSS
 open LSpec
 
 
-namespace Crypt.ShamirSecretSharing.Test
+namespace Crypto.SSS.Test
 
 
 def sublist (n : Nat) (xs : List a) : SlimCheck.Gen (List a) :=
@@ -44,4 +44,4 @@ instance : SlimCheck.SampleableExt (TestCase p) :=
     -- FIXME: The negative test could fail due to coincidence!
 
 
-end Crypt.ShamirSecretSharing.Test
+end Crypto.SSS.Test
