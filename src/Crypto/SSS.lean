@@ -3,7 +3,7 @@ import Mathlib.Control.Random
 import Mathlib.Data.Vector
 
 
-namespace Crypto.ShamirSecretSharing
+namespace Crypto.SSS
 
 
 private def randVector [Monad m] {a : Type} [Random m a] [RandomGen g] : RandGT g m (Vector a n) :=
@@ -35,23 +35,34 @@ structure Share (F : Type) where
 deriving Repr, DecidableEq, BEq
 
 
-def sharePolynomial [∀ i, OfNat F i] [Add F] [Mul F] (parties : Nat) (poly : Polynomial trust F) : List (Share F) :=
+def publicShares (shares : List (Share F)) : List F :=
+  shares.map Share.x
+
+def sharePolynomial [∀ i, OfNat F i] [Add F] [Mul F] (parties : Nat) (poly : Polynomial threshold F) : List (Share F) :=
   let sample i :=
     let j := OfNat.ofNat i + OfNat.ofNat 1
     Share.mk j (poly.f j)
   (List.range parties).map sample
 
-def share [Monad m] [RandomGen g] [Random m F] [∀ i, OfNat F i] [Add F] [Mul F] (secret : F) (trust : Nat) (parties : Nat) : RandGT g m (List (Share F)) :=
-  sharePolynomial parties <$> randomPolynomial secret (trust - 1)
+def share [Monad m] [RandomGen g] [Random m F] [∀ i, OfNat F i] [Add F] [Mul F] (secret : F) (threshold : Nat) (parties : Nat) : RandGT g m (List (Share F)) :=
+  sharePolynomial parties <$> randomPolynomial secret (threshold - 1)
 
-def recover [BEq F] [Add F] [Sub F] [Mul F] [Div F] [∀ i, OfNat F i] (shares : List (Share F)) : F :=
-  let xs := shares.map Share.x
-  let term (x y : F) : F :=
+def coefficients [BEq F] [Add F] [Sub F] [Mul F] [Div F] [∀ i, OfNat F i] (xs : List F) : List F :=
+  let term (x : F) : F :=
     let oth := xs.filter (fun x' => x' != x)
-    let num := y * List.foldl Mul.mul 1 oth
+    let num := List.foldl Mul.mul 1 oth
     let den := List.foldl Mul.mul 1 $ oth.map (fun x' => x' - x)
     num / den
-  List.foldl (fun acc share => acc + term share.x share.y) 0 shares
+  xs.map term
+
+def interpolate [OfNat G 0] [Add G] [HMul F G G] (lagranges : List F) (vals : List G) : G :=
+  (List.zipWith HMul.hMul lagranges vals).foldl Add.add 0
+
+def reconstruct [OfNat G 0] [BEq F] [Add F] [Mul F] [Sub F] [Add G] [HMul F G G] [Div F] [∀ i, OfNat F i] (xs : List F) (vals : List G) : G :=
+  interpolate (coefficients xs) vals
+
+def recover [BEq F] [Add F] [Sub F] [Mul F] [Div F] [∀ i, OfNat F i] (shares : List (Share F)) : F :=
+  reconstruct (shares.map Share.x) (shares.map Share.y)
 
 
-end Crypto.ShamirSecretSharing
+end Crypto.SSS
