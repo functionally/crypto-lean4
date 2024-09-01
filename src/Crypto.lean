@@ -15,3 +15,6 @@ import Crypto.Hash.SHA2
 import Crypto.Hash.SHA2.Test
 
 import Crypto.Serial
+
+import Crypto.ShamirSecretSharing
+import Crypto.ShamirSecretSharing.Test
