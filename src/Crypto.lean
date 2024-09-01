@@ -18,3 +18,6 @@ import Crypto.Serial
 
 import Crypto.SSS
 import Crypto.SSS.Test
+
+import Crypto.TSS
+import Crypto.TSS.Test

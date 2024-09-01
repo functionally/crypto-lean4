@@ -12,10 +12,10 @@ namespace EllipticCurve
   variable {F : Type}
 
 
-  def wellFormed [OfNat F 0] [OfNat F 4] [OfNat F 27] [Add F] [Mul F] [Pow F Nat] (ec : EllipticCurve F) : Prop :=
+  def wellFormed [∀ i, OfNat F i] [Add F] [Mul F] [Pow F Nat] (ec : EllipticCurve F) : Prop :=
     ¬ 4 * ec.a^3 + 27 * ec.b^2 = 0
 
-  def wellFormed' [BEq F] [OfNat F 0] [OfNat F 4] [OfNat F 27] [Add F] [Mul F] [Pow F Nat] (ec : EllipticCurve F) : Bool :=
+  def wellFormed' [∀ i, OfNat F i] [BEq F] [Add F] [Mul F] [Pow F Nat] (ec : EllipticCurve F) : Bool :=
     4 * ec.a^3 + 27 * ec.b^2 != 0
 
 
@@ -23,6 +23,9 @@ namespace EllipticCurve
   | mk : F → F → Point ec
   | infinity : Point ec
   deriving Repr, DecidableEq, BEq
+
+  instance : OfNat (Point ec) 0 where
+    ofNat := Point.infinity
 
   namespace Point
 
@@ -37,7 +40,7 @@ namespace EllipticCurve
   end Point
 
   -- https://crypto.stanford.edu/pbc/notes/elliptic/explicit.html
-  instance {ec : EllipticCurve F} [OfNat F 0] [OfNat F 2] [OfNat F 3] [BEq F] [Add F] [Sub F] [Mul F] [Div F] [Pow F Nat] [DecidableEq F] : Add (Point ec) where
+  instance {ec : EllipticCurve F} [∀ i, OfNat F i] [BEq F] [Add F] [Sub F] [Mul F] [Div F] [Pow F Nat] [DecidableEq F] : Add (Point ec) where
     add
     | p, Point.infinity => p
     | Point.infinity, q => q
@@ -79,7 +82,7 @@ namespace EllipticCurve
     assumption
     apply Nat.one_lt_two
 
-  instance {ec : EllipticCurve F} [Add (Point ec)]: HMul Nat (Point ec) (Point ec) where
+  instance {ec : EllipticCurve F} [Add (Point ec)] : HMul Nat (Point ec) (Point ec) where
     hMul := mulPoint
 
 
