@@ -1,3 +1,9 @@
+import Crypto.Field.Fp
+import Mathlib.Control.Random
+
+open Crypto.Field
+
+
 namespace Crypto
 
 
@@ -28,6 +34,14 @@ namespace EllipticCurve
     ofNat := Point.infinity
 
   namespace Point
+
+    def x [OfNat F 0] {ec : EllipticCurve F} : Point ec → F
+    | Point.mk x' _ => x'
+    | Point.infinity => 0
+
+    def y [OfNat F 0] {ec : EllipticCurve F} : Point ec → F
+    | Point.mk _ y' => y'
+    | Point.infinity => 0
 
     def onCurve [DecidableEq F] [Add F] [Mul F] [Pow F Nat] : Point (ec : EllipticCurve F) → Prop
     | Point.infinity => True
@@ -85,6 +99,9 @@ namespace EllipticCurve
   instance {ec : EllipticCurve F} [Add (Point ec)] : HMul Nat (Point ec) (Point ec) where
     hMul := mulPoint
 
+  instance {p : Nat} {ec : EllipticCurve (Fp p)} [Add (Point ec)] : HMul (Fp p) (Point ec) (Point ec) where
+    hMul := mulPoint ∘ Fp.val
+
 
   structure Group (ec : EllipticCurve F) where
     G : EllipticCurve.Point ec
@@ -104,14 +121,33 @@ namespace EllipticCurve
       }
 
     structure KeyPair (g : EllipticCurve.Group ec) where
-      prv : Nat
+      prv : F
       pub : EllipticCurve.Point ec
     deriving Repr, DecidableEq, BEq
 
     variable {g : EllipticCurve.Group ec}
 
-    def keyPair [HMul Nat (Point ec) (Point ec)] (prv : Nat) : KeyPair g :=
-      KeyPair.mk prv (prv * g.G)
+    def keyPair [∀ i, OfNat F i] [HMul Nat (Point ec) (Point ec)] (prv : Nat) : KeyPair g :=
+      KeyPair.mk (OfNat.ofNat prv) (prv * g.G)
+
+    def randKeyPair [RandomGen g'] [Monad m] [Random m F] [HMul F (Point ec) (Point ec)] : RandGT g' m (KeyPair g) :=
+      do
+        let prv ← Random.random
+        pure $ KeyPair.mk prv (prv * g.G)
+
+    instance [Monad m] [Random m F] [HMul F (Point ec) (Point ec)] : Random m (KeyPair g) where
+      random := randKeyPair
+
+    structure PubKey (g : EllipticCurve.Group ec) where
+      pub : EllipticCurve.Point ec
+    deriving Repr, DecidableEq, BEq
+
+    namespace KeyPair
+
+      def pubKey : KeyPair (g : EllipticCurve.Group ec) → PubKey g :=
+        PubKey.mk ∘ KeyPair.pub
+
+    end KeyPair
 
   end Group
 

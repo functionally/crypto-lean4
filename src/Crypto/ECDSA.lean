@@ -1,6 +1,6 @@
 import Crypto.Field.Fp
 import Crypto.EllipticCurve
-import Crypto.Hash
+import Mathlib.Control.Random
 
 open Crypto
 open Crypto.Field
@@ -9,16 +9,33 @@ open Crypto.EllipticCurve
 
 namespace Crypto.ECDSA
 
-variable {F : Type}
-variable {ec : EllipticCurve F}
 
-def sign : Nat → ByteArray → EllipticCurve.Point ec :=
-  sorry
-#check sign
+variable {p : Nat}
+variable {ec : EllipticCurve (Fp p)}
+variable {g : EllipticCurve.Group ec}
 
-def verify : EllipticCurve.Point ec → ByteArray → EllipticCurve.Point ec → Bool :=
-  sorry
-#check verify
+
+def trySign (kp : Group.KeyPair g) (z : Fp g.n) (k : Fp g.n) : Option (Fp p × Fp g.n) :=
+  let P : Point ec := k.val * g.G
+  let r : Fp p := P.x
+  let s : Fp g.n := (z + r.castFp * kp.prv.castFp) / k
+  if r = 0 ∨ s = 0
+    then none
+    else some ⟨ r , s ⟩
+
+partial def sign [RandomGen g'] [Monad m] (kp : Group.KeyPair g) (z : Fp g.n) : RandGT g' m (Fp p × Fp g.n) :=
+  do
+    let k ← Random.random
+    match trySign kp z k with
+    | none => sign kp z
+    | some result => pure result
+
+
+def verify (pk : Group.PubKey g) (z : Fp g.n) : Fp p × Fp g.n → Bool
+| ⟨ r , s ⟩ => let u₁ := z / s
+               let u₂ := r.castFp / s
+               let P := u₁.val * g.G + u₂.val * pk.pub
+               r = P.x
 
 
 end Crypto.ECDSA

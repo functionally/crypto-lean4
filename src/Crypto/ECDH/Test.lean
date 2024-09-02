@@ -9,7 +9,7 @@ open Crypto.EllipticCurve.Group
 open LSpec
 
 
-namespace Crypto.EllipticCurve.Secp256k1.Test
+namespace Crypto.EllipticCurve.ECDH.Test
 
 
 -- https://andrea.corbellini.name/2015/05/30/elliptic-curve-cryptography-ecdh-and-ecdsa/
@@ -50,4 +50,4 @@ def bobAlice := sharedSecret bob.prv alice.pub
     )
 
 
-end Crypto.EllipticCurve.Secp256k1.Test
+end Crypto.EllipticCurve.ECDH.Test
