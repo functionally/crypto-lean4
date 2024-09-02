@@ -52,6 +52,9 @@ namespace Fp
       then some ⟨ (xi % p).toNat ⟩
       else none
 
+  def castFp : Fp p → Fp p' :=
+    Fp.mk ∘ Fp.val
+
   def randFp [RandomGen g] [Monad m] {p : Nat} : RandGT g m (Fp p) :=
     Fp.mkUnsafe
     <$> Random.randBound Nat 0 (p - 1)

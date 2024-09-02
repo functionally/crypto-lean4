@@ -1,18 +1,8 @@
 
 import Mathlib.Control.Random
-import Mathlib.Data.Vector
 
 
 namespace Crypto.SSS
-
-
-private def randVector [Monad m] {a : Type} [Random m a] [RandomGen g] : RandGT g m (Vector a n) :=
-  match n with
-  | Nat.zero => pure Vector.nil
-  | Nat.succ _ => Vector.cons <$> Random.random <*> randVector
-
-instance {a : Type} [Random m a] [Monad m] : Random m (Vector a n) where
-  random := randVector
 
 
 structure Polynomial (n : Nat) (F : Type) where

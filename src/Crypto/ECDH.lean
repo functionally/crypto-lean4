@@ -11,7 +11,7 @@ variable {F : Type}
 variable {ec : EllipticCurve F}
 
 
-def sharedSecret  [HMul Nat (Point ec) (Point ec)] (prv : Nat) (pub : Point ec) : Point ec :=
+def sharedSecret  [HMul F (Point ec) (Point ec)] (prv : F) (pub : Point ec) : Point ec :=
   prv * pub
 
 
