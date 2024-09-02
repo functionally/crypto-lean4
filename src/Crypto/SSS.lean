@@ -48,11 +48,11 @@ def coefficients [BEq F] [Add F] [Sub F] [Mul F] [Div F] [∀ i, OfNat F i] (xs 
 def interpolate [OfNat G 0] [Add G] [HMul F G G] (lagranges : List F) (vals : List G) : G :=
   (List.zipWith HMul.hMul lagranges vals).foldl Add.add 0
 
-def reconstruct [OfNat G 0] [BEq F] [Add F] [Mul F] [Sub F] [Add G] [HMul F G G] [Div F] [∀ i, OfNat F i] (xs : List F) (vals : List G) : G :=
+def aggregate [OfNat G 0] [BEq F] [Add F] [Mul F] [Sub F] [Add G] [HMul F G G] [Div F] [∀ i, OfNat F i] (xs : List F) (vals : List G) : G :=
   interpolate (coefficients xs) vals
 
 def recover [BEq F] [Add F] [Sub F] [Mul F] [Div F] [∀ i, OfNat F i] (shares : List (Share F)) : F :=
-  reconstruct (shares.map Share.x) (shares.map Share.y)
+  aggregate (shares.map Share.x) (shares.map Share.y)
 
 
 end Crypto.SSS

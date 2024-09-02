@@ -38,9 +38,9 @@ private def cs : List (field g) := SSS.coefficients $ SSS.publicShares shares
 
 private def pks := shares.map (fun s => s.y.val * g.G)
 
-#lspec group "reconstruction"
+#lspec group "aggregation"
   $ test "private key" (SSS.recover shares == seed)
-  $ test "public key" (reconstruct (SSS.publicShares shares) pks == kp.pub)
+  $ test "public key" (aggregate (SSS.publicShares shares) pks == kp.pub)
 
 
 end Crypto.TSS.Test
