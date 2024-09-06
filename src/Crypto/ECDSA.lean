@@ -30,11 +30,10 @@ partial def sign [RandomGen g'] [Monad m] (kp : Group.KeyPair g) (z : Fp g.n) : 
     | none => sign kp z
     | some result => pure result
 
-
-def verify (pk : Group.PubKey g) (z : Fp g.n) : Fp p × Fp g.n → Bool
+def verify {p : Nat} {ec : EllipticCurve (Fp p)} {g : EllipticCurve.Group ec} (pk : EllipticCurve.Group.PubKey g) (z : Fp g.n) : Fp p × Fp g.n → Bool
 | ⟨ r , s ⟩ => let u₁ := z / s
                let u₂ := r.castFp / s
-               let P := u₁.val * g.G + u₂.val * pk.pub
+               let P := u₁ * g.G + u₂ * pk.pub
                r = P.x
 
 

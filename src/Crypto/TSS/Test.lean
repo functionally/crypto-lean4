@@ -37,11 +37,11 @@ private def share2 : SSS.Share (field g) (field g) := SSS.Share.mk 2 77819983426
 private def share3 : SSS.Share (field g) (field g) := SSS.Share.mk 3 91010573714403589629258356730960118601181097244029577497305204097278162627479
 private def shares : SSS.Shares (field g) (field g) := SSS.Shares.mk [share1, share2, share3]
 
-private def pks := Functor.map (fun y => y.val * g.G) shares
+private def pks := Functor.map (fun y => y * g.G) shares
 
-#lspec group "aggregation"
-  $ test "private key" (SSS.aggregate shares == seed)
-  $ test "public key" (aggregate pks == kp.pub)
+#lspec group "assemble"
+  $ test "private key" (SSS.assemble shares == seed)
+  $ test "public key" (assemble pks == kp.pub)
 
 -- TODO: Automate test with generators.
 

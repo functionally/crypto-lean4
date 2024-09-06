@@ -88,7 +88,7 @@ def share [Monad m] [RandomGen g] [Random m F] [∀ i, OfNat F i] [Add F] [Mul F
 def interpolate [OfNat G 0] [Add G] [HMul F G G] (lagranges : List F) (vals : List G) : G :=
   (List.zipWith HMul.hMul lagranges vals).foldl Add.add 0
 
-def aggregate [OfNat G 0] [BEq F] [Add F] [Mul F] [Sub F] [Add G] [HMul F G G] [Div F] [∀ i, OfNat F i] (shares : Shares F G) : G :=
+def assemble [OfNat G 0] [BEq F] [Add F] [Mul F] [Sub F] [Add G] [HMul F G G] [Div F] [∀ i, OfNat F i] (shares : Shares F G) : G :=
   let coefs := shares.coefficients.xys.map Share.y
   let vals := shares.xys.map Share.y
   interpolate coefs vals

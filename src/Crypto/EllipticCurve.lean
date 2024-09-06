@@ -99,7 +99,7 @@ namespace EllipticCurve
   instance {ec : EllipticCurve F} [Add (Point ec)] : HMul Nat (Point ec) (Point ec) where
     hMul := mulPoint
 
-  instance {p : Nat} {ec : EllipticCurve (Fp p)} [Add (Point ec)] : HMul (Fp p) (Point ec) (Point ec) where
+  instance {p : Nat} {q : Nat} {ec : EllipticCurve (Fp p)} [Add (Point ec)] : HMul (Fp q) (Point ec) (Point ec) where
     hMul := mulPoint ∘ Fp.val
 
 

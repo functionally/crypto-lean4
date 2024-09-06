@@ -39,8 +39,8 @@ instance : SlimCheck.SampleableExt (TestCase p) :=
 
 #lspec
   group "sharePolynomial_recover"
-    $ check "positive" (∀ tc : TestCase 101, tc.shares.xys.length < tc.threshold ∨ tc.secret = aggregate tc.shares)
-    $ check "negative" (∀ tc : TestCase 223, tc.shares.xys.length ≥ tc.threshold ↔ ¬ tc.shares.xys.length = 0 ∧ tc.secret = aggregate tc.shares)
+    $ check "positive" (∀ tc : TestCase 101, tc.shares.xys.length < tc.threshold ∨ tc.secret = assemble tc.shares)
+    $ check "negative" (∀ tc : TestCase 223, tc.shares.xys.length ≥ tc.threshold ↔ ¬ tc.shares.xys.length = 0 ∧ tc.secret = assemble tc.shares)
     -- FIXME: The negative test could fail due to coincidence!
 
 
