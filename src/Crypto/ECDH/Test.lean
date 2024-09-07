@@ -35,8 +35,8 @@ def bob : KeyPair g := keyPair 0xcef147652aa90162e1fff9cf07f2605ea05529ca215a043
     )
 
 
-def aliceBob := sharedSecret alice.prv bob.pub
-def bobAlice := sharedSecret bob.prv alice.pub
+def aliceBob := sharedSecret alice.prv.val bob.pub
+def bobAlice := sharedSecret bob.prv.val alice.pub
 
 #lspec group "Shared secret"
   $ test "Commutes" (

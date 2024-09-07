@@ -10,8 +10,9 @@ namespace Crypto.ECDH
 variable {F : Type}
 variable {ec : EllipticCurve F}
 
+[HMul Nat (Point ec) (Point ec)]
 
-def sharedSecret  [HMul F (Point ec) (Point ec)] (prv : F) (pub : Point ec) : Point ec :=
+def sharedSecret  (prv : Nat) (pub : Point ec) : Point ec :=
   prv * pub
 
 

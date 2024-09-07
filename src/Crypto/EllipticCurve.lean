@@ -113,6 +113,11 @@ namespace EllipticCurve
 
     variable {ec : EllipticCurve F}
 
+    [∀ i, OfNat F i]
+    [HMul Nat (Point ec) (Point ec)]
+
+    abbrev point (_ : EllipticCurve.Group ec) : Type := EllipticCurve.Point ec
+
     def mkGroup (x : F) (y : F) (n : Nat) (h : Nat) : Group ec :=
       {
         G := EllipticCurve.Point.mk x y
@@ -121,21 +126,21 @@ namespace EllipticCurve
       }
 
     structure KeyPair (g : EllipticCurve.Group ec) where
-      prv : F
+      prv : Fp g.n
       pub : EllipticCurve.Point ec
     deriving Repr, DecidableEq, BEq
 
     variable {g : EllipticCurve.Group ec}
 
-    def keyPair [∀ i, OfNat F i] [HMul Nat (Point ec) (Point ec)] (prv : Nat) : KeyPair g :=
+    def keyPair (prv : Nat) : KeyPair g :=
       KeyPair.mk (OfNat.ofNat prv) (prv * g.G)
 
-    def randKeyPair [RandomGen g'] [Monad m] [Random m F] [HMul F (Point ec) (Point ec)] : RandGT g' m (KeyPair g) :=
+    def randKeyPair [RandomGen gen] [Monad m] : RandGT gen m (KeyPair g) :=
       do
         let prv ← Random.random
-        pure $ KeyPair.mk prv (prv * g.G)
+        pure $ KeyPair.mk prv (prv.val * g.G)
 
-    instance [Monad m] [Random m F] [HMul F (Point ec) (Point ec)] : Random m (KeyPair g) where
+    instance [Monad m] [Random m (Fp g.n)] : Random m (KeyPair g) where
       random := randKeyPair
 
     structure PubKey (g : EllipticCurve.Group ec) where

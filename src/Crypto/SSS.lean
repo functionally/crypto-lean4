@@ -60,6 +60,9 @@ namespace Shares
       Share.mk x $ num / den
     Shares.mk $ pubs.xys.map term
 
+  def count : Shares F G → Nat :=
+    List.length ∘ Shares.xys
+
 end Shares
 
 namespace PrivShares
