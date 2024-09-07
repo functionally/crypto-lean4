@@ -116,6 +116,7 @@ namespace NonZeroFp
     simp
     sorry
 -/
+
   -- FIXME: Strengthen this to yield `NonZeroFp p` instead of `Fp p`.
   def inverse (x : NonZeroFp p) : Fp p :=
     let ⟨ _ , xi , _⟩ := gcdExtended x.val p

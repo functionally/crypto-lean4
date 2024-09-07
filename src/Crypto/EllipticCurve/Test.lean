@@ -44,6 +44,9 @@ def testAdd (n : Nat) (ec : EllipticCurve (Fp n)) (px py qx qy rx ry : Fp n) :=
         $ test "Case #1" (testAdd 97 ⟨2,3⟩ 3 6 80 10 80 87)
     )
 
+-- FIXME: Test commutativity.
+-- FIXME: Test associativity.
+
 
 def testMul (n : Nat) (ec : EllipticCurve (Fp n)) (k : Nat) (px py rx ry : Fp n) :=
   let p : EllipticCurve.Point ec := EllipticCurve.Point.mk px py
@@ -66,6 +69,9 @@ def testMul (n : Nat) (ec : EllipticCurve (Fp n)) (k : Nat) (px py rx ry : Fp n)
         $ test "Case #2" (testMul 97 ⟨2,3⟩ 4 3 6 3 91)
         $ test "Case #3" (testMul 97 ⟨2,3⟩ 6 3 6 3 6)
   )
+
+-- FIXME: Test commutativity.
+-- FIXME: Test associativity.
 
 
 end Crypto.EllipticCurve.Test

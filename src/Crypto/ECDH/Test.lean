@@ -14,11 +14,8 @@ namespace Crypto.EllipticCurve.ECDH.Test
 
 -- https://andrea.corbellini.name/2015/05/30/elliptic-curve-cryptography-ecdh-and-ecdsa/
 
-abbrev g := Secp256k1
-
-
-def alice : KeyPair g := keyPair 0xe32868331fa8ef0138de0de85478346aec5e3912b6029ae71691c384237a3eeb
-def bob : KeyPair g := keyPair 0xcef147652aa90162e1fff9cf07f2605ea05529ca215a04350a98ecc24aa34342
+def alice : KeyPair Secp256k1 := keyPair 0xe32868331fa8ef0138de0de85478346aec5e3912b6029ae71691c384237a3eeb
+def bob : KeyPair Secp256k1 := keyPair 0xcef147652aa90162e1fff9cf07f2605ea05529ca215a04350a98ecc24aa34342
 
 def aliceBob := sharedSecret alice.prv.val bob.pub
 def bobAlice := sharedSecret bob.prv.val alice.pub
@@ -53,12 +50,12 @@ def bobAlice := sharedSecret bob.prv.val alice.pub
     )
 
 
-structure TestCase where
+structure TestCase (g : EllipticCurve.Group ec) where
   alice : Group.KeyPair g
   bob : Group.KeyPair g
 deriving Repr
 
-def genTestable : SlimCheck.Gen TestCase :=
+def genTestable [Random Id (KeyPair g)] : SlimCheck.Gen (TestCase g):=
   do
     let alice ← (Random.random : Rand (KeyPair g))
     let bob ← (Random.random : Rand (KeyPair g))
@@ -67,11 +64,11 @@ def genTestable : SlimCheck.Gen TestCase :=
 instance : SlimCheck.Shrinkable Testcase where
   shrink _ := []
 
-instance : SlimCheck.SampleableExt TestCase :=
-  SlimCheck.SampleableExt.mkSelfContained genTestable
+instance [Repr (TestCase g)] [Random Id (KeyPair g)] : SlimCheck.SampleableExt (TestCase g) :=
+  SlimCheck.SampleableExt.mkSelfContained $ genTestable
 
 #lspec group "Shared secret"
-  $ check "commutes" (∀ tc : TestCase, sharedSecret tc.alice.prv.val tc.bob.pub = sharedSecret tc.bob.prv.val tc.alice.pub)
+  $ check "commutes" (∀ tc : TestCase Secp256k1, sharedSecret tc.alice.prv.val tc.bob.pub = sharedSecret tc.bob.prv.val tc.alice.pub)
 
 
 end Crypto.EllipticCurve.ECDH.Test

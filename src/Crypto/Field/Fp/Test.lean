@@ -52,5 +52,7 @@ def F (p : Nat) : Nat → Fp p := Fp.mk
   $ ∀ p x : Nat,
     p = 0 ∨ (Div.div (F p x) (F p 0)) = 0
 
+-- FIXME: Test or prove common arithmetic properties.
+
 
 end Crypto.Field.Fp.Test

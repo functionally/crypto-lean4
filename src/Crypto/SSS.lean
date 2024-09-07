@@ -18,7 +18,7 @@ def randomPolynomial [RandomGen g] [Monad m] [Random m F] [Add F] [Mul F] (a₀ 
                      let p ← randomPolynomial a₁ t'
                      let g x := a₀ + x * p.f x
                      pure $ Polynomial.mk g
-#check 3
+
 
 structure PrivShares (F : Type) (n : Nat) where
   ys : Vector F n
@@ -49,9 +49,18 @@ instance [BEq F] : Mul (Shares F G) where
 -- TODO: Consider making `Shares` an instance of `Monoid`.
 -- TODO: Use `Add` for piecewise addition of `Shares`.
 
+variable {F : Type}
+
+[∀ i, OfNat F i]
+[BEq F]
+[Add F]
+[Sub F]
+[Mul F]
+[Div F]
+
 namespace Shares
 
-  def coefficients [BEq F] [Add F] [Sub F] [Mul F] [Div F] [∀ i, OfNat F i] (pubs : Shares F G) : Shares F F :=
+  def coefficients (pubs : Shares F G) : Shares F F :=
     let term (xy : Share F G) : Share F F:=
       let x := xy.x
       let oth := (pubs.xys.map Share.x).filter (fun x' => x' != x)
@@ -67,31 +76,37 @@ end Shares
 
 namespace PrivShares
 
-  def pubShares [∀ i, OfNat F i] (_ : PrivShares F n) : Shares F Unit :=
+  def pubShares (_ : PrivShares F n) : Shares F Unit :=
     Shares.mk $ (List.range n).map (fun i => Share.mk (OfNat.ofNat $ Add.add 1 i) ())
 
-  def toShares [∀ i, OfNat F i] (privs : PrivShares F n) : Shares F F :=
+  def toShares (privs : PrivShares F n) : Shares F F :=
     Shares.mk $ List.zipWith Share.mk ((List.range n).map (fun i => OfNat.ofNat $ Add.add 1 i)) privs.ys.toList
 
-  def coefficients [BEq F] [Add F] [Sub F] [Mul F] [Div F] [∀ i, OfNat F i] : PrivShares F n → Shares F F :=
+  def coefficients : PrivShares F n → Shares F F :=
     Shares.coefficients ∘ PrivShares.pubShares
 
 end PrivShares
 
 namespace Polynomial
 
-  def toShares [∀ i, OfNat F i] [Add F] [Mul F] {parties : Nat} (poly : Polynomial threshold F) : PrivShares F parties :=
+  def toShares {parties : Nat} (poly : Polynomial threshold F) : PrivShares F parties :=
     PrivShares.mk $ Vector.ofFn (fun i => poly.f $ OfNat.ofNat $ i.val + 1)
 
 end Polynomial
 
-def share [Monad m] [RandomGen g] [Random m F] [∀ i, OfNat F i] [Add F] [Mul F] {parties : Nat} (secret : F) (threshold : Nat) : RandGT g m (PrivShares F parties) :=
+def share [Monad m] [RandomGen g] [Random m F] {parties : Nat} (secret : F) (threshold : Nat) : RandGT g m (PrivShares F parties) :=
   Polynomial.toShares <$> randomPolynomial secret (threshold - 1)
 
-def interpolate [OfNat G 0] [Add G] [HMul F G G] (lagranges : List F) (vals : List G) : G :=
+variable {G : Type}
+
+[OfNat G 0]
+[Add G]
+[HMul F G G]
+
+def interpolate (lagranges : List F) (vals : List G) : G :=
   (List.zipWith HMul.hMul lagranges vals).foldl Add.add 0
 
-def assemble [OfNat G 0] [BEq F] [Add F] [Mul F] [Sub F] [Add G] [HMul F G G] [Div F] [∀ i, OfNat F i] (shares : Shares F G) : G :=
+def assemble (shares : Shares F G) : G :=
   let coefs := shares.coefficients.xys.map Share.y
   let vals := shares.xys.map Share.y
   interpolate coefs vals
