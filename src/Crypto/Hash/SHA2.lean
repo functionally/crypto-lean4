@@ -1,4 +1,3 @@
-import Crypto.Hash
 import Crypto.Serial
 
 open Crypto
