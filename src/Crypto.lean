@@ -16,6 +16,8 @@ import Crypto.EllipticCurve.ECDSA.Test
 
 import Crypto.EllipticCurve.ECIES
 
+import Crypto.EllipticCurve.Schnorr
+
 import Crypto.Hash
 import Crypto.Hash.Test
 
