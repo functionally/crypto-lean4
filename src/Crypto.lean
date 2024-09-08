@@ -8,13 +8,13 @@ import Crypto.EllipticCurve
 import Crypto.EllipticCurve.Secp256k1
 import Crypto.EllipticCurve.Test
 
-import Crypto.ECDH
-import Crypto.ECDH.Test
+import Crypto.EllipticCurve.ECDH
+import Crypto.EllipticCurve.ECDH.Test
 
-import Crypto.ECDSA
-import Crypto.ECDSA.Test
+import Crypto.EllipticCurve.ECDSA
+import Crypto.EllipticCurve.ECDSA.Test
 
-import Crypto.ECIES
+import Crypto.EllipticCurve.ECIES
 
 import Crypto.Hash
 import Crypto.Hash.Test

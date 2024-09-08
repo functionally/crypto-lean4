@@ -1,8 +1,9 @@
-import LSpec
 import Crypto.Serial
+import LSpec
 import Mathlib.Control.Random
 
 open LSpec
+
 
 namespace Crypto.Serial.Test
 

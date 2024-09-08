@@ -1,4 +1,3 @@
-
 import Mathlib.Control.Random
 import Mathlib.Data.Vector
 

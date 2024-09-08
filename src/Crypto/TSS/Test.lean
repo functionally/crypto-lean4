@@ -1,11 +1,9 @@
-
-import LSpec
-
 import Crypto.EllipticCurve.Secp256k1
 import Crypto.Field.Fp
 import Crypto.SSS
 import Crypto.SSS.Test
 import Crypto.TSS
+import LSpec
 import Mathlib.Control.Random
 
 open Crypto

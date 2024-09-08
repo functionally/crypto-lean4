@@ -1,5 +1,5 @@
-import LSpec
 import Crypto.Hash
+import LSpec
 
 open Crypto.CHash
 open LSpec

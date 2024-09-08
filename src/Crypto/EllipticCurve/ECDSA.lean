@@ -1,13 +1,13 @@
-import Crypto.Field.Fp
 import Crypto.EllipticCurve
+import Crypto.Field.Fp
 import Mathlib.Control.Random
 
 open Crypto
-open Crypto.Field
 open Crypto.EllipticCurve
+open Crypto.Field
 
 
-namespace Crypto.ECDSA
+namespace Crypto.EllipticCurve.ECDSA
 
 
 variable {p : Nat}
@@ -46,4 +46,4 @@ def verify (pk : EllipticCurve.Group.PubKey g) (z : Fp g.n) : Signature g → Bo
                r = P.x.castFp
 
 
-end Crypto.ECDSA
+end Crypto.EllipticCurve.ECDSA

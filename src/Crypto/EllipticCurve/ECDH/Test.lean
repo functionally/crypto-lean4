@@ -1,10 +1,9 @@
+import Crypto.EllipticCurve
+import Crypto.EllipticCurve.ECDH
+import Crypto.EllipticCurve.Secp256k1
 import LSpec
 
-import Crypto.ECDH
-import Crypto.EllipticCurve
-import Crypto.EllipticCurve.Secp256k1
-
-open Crypto.ECDH
+open Crypto.EllipticCurve.ECDH
 open Crypto.EllipticCurve.Group
 open LSpec
 

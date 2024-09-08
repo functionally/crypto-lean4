@@ -1,7 +1,6 @@
-import LSpec
-
 import Crypto.Hash.SHA2
 import Crypto.Serial
+import LSpec
 
 open Crypto.Hash.SHA2
 open Crypto.Serial

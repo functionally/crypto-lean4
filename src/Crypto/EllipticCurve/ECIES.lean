@@ -1,18 +1,17 @@
-import LSpec
-
-import Crypto.ECDH
 import Crypto.EllipticCurve
+import Crypto.EllipticCurve.ECDH
 import Crypto.EllipticCurve.Secp256k1
 import Crypto.Field.Fp
+import LSpec
 
 open Crypto.EllipticCurve
+open Crypto.EllipticCurve.ECDH
 open Crypto.EllipticCurve.Group
-open Crypto.ECDH
 open Crypto.Field
 open LSpec
 
 
-namespace Crypto.ECIES
+namespace Crypto.EllipticCurve.ECIES
 
 -- https://medium.com/@francomangone18/cryptography-101-encryption-and-digital-signatures-210960778765
 
@@ -45,4 +44,4 @@ def plain := mask'.x.val.xor cipher
 #eval message = plain
 
 
-end Crypto.ECIES
+end Crypto.EllipticCurve.ECIES

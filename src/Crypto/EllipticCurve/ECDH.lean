@@ -4,7 +4,7 @@ open Crypto
 open Crypto.EllipticCurve
 
 
-namespace Crypto.ECDH
+namespace Crypto.EllipticCurve.ECDH
 
 
 variable {F : Type}
@@ -16,4 +16,4 @@ def sharedSecret  (prv : Nat) (pub : Point ec) : Point ec :=
   prv * pub
 
 
-end Crypto.ECDH
+end Crypto.EllipticCurve.ECDH

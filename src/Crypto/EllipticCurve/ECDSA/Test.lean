@@ -1,18 +1,18 @@
-import LSpec
-import Crypto.Field.Fp
 import Crypto.EllipticCurve
+import Crypto.EllipticCurve.ECDSA
 import Crypto.EllipticCurve.Secp256k1
-import Crypto.ECDSA
+import Crypto.Field.Fp
+import LSpec
 import Mathlib.Control.Random
 
 open Crypto
-open Crypto.Field
 open Crypto.EllipticCurve
-open Crypto.ECDSA
+open Crypto.EllipticCurve.ECDSA
+open Crypto.Field
 open LSpec
 
 
-namespace Crypto.ECDSA.Test
+namespace Crypto.EllipticCurve.ECDSA.Test
 
 variable {ec : EllipticCurve (Fp p)}
 
@@ -38,4 +38,4 @@ instance : SlimCheck.SampleableExt (TestCase g) :=
 #lspec check "Verify signature" (∀ tc : TestCase Secp256k1, verify tc.keyPair.pubKey tc.hash tc.sig)
 
 
-end Crypto.ECDSA.Test
+end Crypto.EllipticCurve.ECDSA.Test

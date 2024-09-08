@@ -1,17 +1,9 @@
-
-import Crypto.ECDSA
 import Crypto.EllipticCurve
+import Crypto.EllipticCurve.ECDSA
+import Crypto.EllipticCurve.Secp256k1
 import Crypto.Field.Fp
 import Crypto.SSS
 import Mathlib.Control.Random
-
-
-
-
-import Crypto.EllipticCurve.Secp256k1
-
-
-
 
 open Crypto
 open Crypto.EllipticCurve

@@ -1,11 +1,10 @@
+import Crypto.EllipticCurve
+import Crypto.Field.Fp
 import LSpec
 
-import Crypto.Field.Fp
-import Crypto.EllipticCurve
-
 open Crypto
-open Crypto.Field
 open Crypto.EllipticCurve
+open Crypto.Field
 open LSpec
 
 

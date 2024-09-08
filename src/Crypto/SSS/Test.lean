@@ -1,6 +1,6 @@
-import LSpec
 import Crypto.Field.Fp
 import Crypto.SSS
+import LSpec
 import Mathlib.Control.Random
 
 open Crypto.Field
