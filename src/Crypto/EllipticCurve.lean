@@ -17,11 +17,20 @@ namespace EllipticCurve
 
   variable {F : Type}
 
+  [∀ i, OfNat F i]
+  [DecidableEq F]
+  [BEq F]
+  [Add F]
+  [Sub F]
+  [Neg F]
+  [Mul F]
+  [Div F]
+  [Pow F Nat]
 
-  def wellFormed [∀ i, OfNat F i] [Add F] [Mul F] [Pow F Nat] (ec : EllipticCurve F) : Prop :=
+  def wellFormed (ec : EllipticCurve F) : Prop :=
     ¬ 4 * ec.a^3 + 27 * ec.b^2 = 0
 
-  def wellFormed' [∀ i, OfNat F i] [BEq F] [Add F] [Mul F] [Pow F Nat] (ec : EllipticCurve F) : Bool :=
+  def wellFormed' (ec : EllipticCurve F) : Bool :=
     4 * ec.a^3 + 27 * ec.b^2 != 0
 
 
@@ -35,26 +44,26 @@ namespace EllipticCurve
 
   namespace Point
 
-    def x [OfNat F 0] {ec : EllipticCurve F} : Point ec → F
+    def x {ec : EllipticCurve F} : Point ec → F
     | Point.mk x' _ => x'
     | Point.infinity => 0
 
-    def y [OfNat F 0] {ec : EllipticCurve F} : Point ec → F
+    def y {ec : EllipticCurve F} : Point ec → F
     | Point.mk _ y' => y'
     | Point.infinity => 0
 
-    def onCurve [DecidableEq F] [Add F] [Mul F] [Pow F Nat] : Point (ec : EllipticCurve F) → Prop
+    def onCurve : Point (ec : EllipticCurve F) → Prop
     | Point.infinity => True
     | Point.mk x y => y^2 = x^3 + ec.a * x + ec.b
 
-    def onCurve' [DecidableEq F] [Add F] [Mul F] [Pow F Nat] : Point (ec : EllipticCurve F) → Bool
+    def onCurve' : Point (ec : EllipticCurve F) → Bool
     | Point.infinity => true
     | Point.mk x y => y^2 == x^3 + ec.a * x + ec.b
 
   end Point
 
   -- https://crypto.stanford.edu/pbc/notes/elliptic/explicit.html
-  instance {ec : EllipticCurve F} [∀ i, OfNat F i] [BEq F] [Add F] [Sub F] [Mul F] [Div F] [Pow F Nat] [DecidableEq F] : Add (Point ec) where
+  instance {ec : EllipticCurve F} : Add (Point ec) where
     add
     | p, Point.infinity => p
     | Point.infinity, q => q
@@ -71,15 +80,15 @@ namespace EllipticCurve
                  then Point.infinity
                  else mkPoint $ (qy - py) / (qx - px)
 
-  instance {ec : EllipticCurve F} [Neg F] : Neg (Point ec) where
+  instance {ec : EllipticCurve F} : Neg (Point ec) where
     neg
     | Point.infinity => Point.infinity
     | Point.mk x y => Point.mk x (- y)
 
-  instance {ec : EllipticCurve F} [Add (Point ec)] [Neg (Point ec)] : Sub (Point ec) where
+  instance {ec : EllipticCurve F} : Sub (Point ec) where
     sub x y := x + (- y)
 
-  def mulPoint {ec : EllipticCurve F} [Add (Point ec)] (n : Nat) (x : Point ec) : Point ec :=
+  def mulPoint {ec : EllipticCurve F} (n : Nat) (x : Point ec) : Point ec :=
     if n = 0
       then Point.infinity
       else if n = 1
@@ -96,10 +105,10 @@ namespace EllipticCurve
     assumption
     apply Nat.one_lt_two
 
-  instance {ec : EllipticCurve F} [Add (Point ec)] : HMul Nat (Point ec) (Point ec) where
+  instance {ec : EllipticCurve F} : HMul Nat (Point ec) (Point ec) where
     hMul := mulPoint
 
-  instance {p : Nat} {ec : EllipticCurve (Fp p)} [Add (Point ec)] : HMul (Fp p) (Point ec) (Point ec) where
+  instance {p : Nat} {q : Nat} {ec : EllipticCurve (Fp p)} [Add (Point ec)] : HMul (Fp q) (Point ec) (Point ec) where
     hMul := mulPoint ∘ Fp.val
 
 
@@ -113,6 +122,8 @@ namespace EllipticCurve
 
     variable {ec : EllipticCurve F}
 
+    abbrev point (_ : EllipticCurve.Group ec) : Type := EllipticCurve.Point ec
+
     def mkGroup (x : F) (y : F) (n : Nat) (h : Nat) : Group ec :=
       {
         G := EllipticCurve.Point.mk x y
@@ -121,21 +132,21 @@ namespace EllipticCurve
       }
 
     structure KeyPair (g : EllipticCurve.Group ec) where
-      prv : F
+      prv : Fp g.n
       pub : EllipticCurve.Point ec
     deriving Repr, DecidableEq, BEq
 
     variable {g : EllipticCurve.Group ec}
 
-    def keyPair [∀ i, OfNat F i] [HMul Nat (Point ec) (Point ec)] (prv : Nat) : KeyPair g :=
+    def keyPair (prv : Nat) : KeyPair g :=
       KeyPair.mk (OfNat.ofNat prv) (prv * g.G)
 
-    def randKeyPair [RandomGen g'] [Monad m] [Random m F] [HMul F (Point ec) (Point ec)] : RandGT g' m (KeyPair g) :=
+    def randKeyPair [RandomGen gen] [Monad m] : RandGT gen m (KeyPair g) :=
       do
         let prv ← Random.random
-        pure $ KeyPair.mk prv (prv * g.G)
+        pure $ KeyPair.mk prv (prv.val * g.G)
 
-    instance [Monad m] [Random m F] [HMul F (Point ec) (Point ec)] : Random m (KeyPair g) where
+    instance [Monad m] [Random m (Fp g.n)] : Random m (KeyPair g) where
       random := randKeyPair
 
     structure PubKey (g : EllipticCurve.Group ec) where

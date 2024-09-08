@@ -1,5 +1,6 @@
 import Mathlib.Control.Random
 
+
 namespace Crypto.Field
 
 
@@ -62,6 +63,9 @@ namespace Fp
 
 end Fp
 
+instance : Inhabited (Fp p) where
+  default := Fp.mk 0
+
 instance : OfNat (Fp p) n where
   ofNat := Fp.mk n
 
@@ -116,6 +120,7 @@ namespace NonZeroFp
     simp
     sorry
 -/
+
   -- FIXME: Strengthen this to yield `NonZeroFp p` instead of `Fp p`.
   def inverse (x : NonZeroFp p) : Fp p :=
     let ⟨ _ , xi , _⟩ := gcdExtended x.val p

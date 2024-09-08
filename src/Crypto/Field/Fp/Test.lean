@@ -4,6 +4,7 @@ import LSpec
 open Crypto.Field
 open LSpec
 
+
 namespace Crypto.Field.Fp.Test
 
 
@@ -51,6 +52,8 @@ def F (p : Nat) : Nat → Fp p := Fp.mk
 #lspec check "div by zero"
   $ ∀ p x : Nat,
     p = 0 ∨ (Div.div (F p x) (F p 0)) = 0
+
+-- FIXME: Test or prove common arithmetic properties.
 
 
 end Crypto.Field.Fp.Test

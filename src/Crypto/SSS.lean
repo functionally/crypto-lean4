@@ -1,5 +1,5 @@
-
 import Mathlib.Control.Random
+import Mathlib.Data.Vector
 
 
 namespace Crypto.SSS
@@ -19,40 +19,98 @@ def randomPolynomial [RandomGen g] [Monad m] [Random m F] [Add F] [Mul F] (a₀ 
                      pure $ Polynomial.mk g
 
 
-structure Share (F : Type) where
+structure PrivShares (F : Type) (n : Nat) where
+  ys : Vector F n
+
+structure Share (F : Type) (G : Type) where
   x : F
-  y : F
+  y : G
 deriving Repr, DecidableEq, BEq
 
+instance : Functor (Share F) where
+  map f s := Share.mk s.x $ f s.y
 
-def publicShares (shares : List (Share F)) : List F :=
-  shares.map Share.x
+abbrev PrivShare F := Share F F
 
-def sharePolynomial [∀ i, OfNat F i] [Add F] [Mul F] (parties : Nat) (poly : Polynomial threshold F) : List (Share F) :=
-  let sample i :=
-    let j := OfNat.ofNat i + OfNat.ofNat 1
-    Share.mk j (poly.f j)
-  (List.range parties).map sample
+-- TODO: Consider implementing this as a `HashMap`.
+structure Shares (F : Type) (G : Type) where
+  xys : List (Share F G)
+deriving Repr, DecidableEq, BEq
 
-def share [Monad m] [RandomGen g] [Random m F] [∀ i, OfNat F i] [Add F] [Mul F] (secret : F) (threshold : Nat) (parties : Nat) : RandGT g m (List (Share F)) :=
-  sharePolynomial parties <$> randomPolynomial secret (threshold - 1)
+instance : Functor (Shares F) where
+  map f := Shares.mk ∘ List.map (Functor.map f) ∘ Shares.xys
 
-def coefficients [BEq F] [Add F] [Sub F] [Mul F] [Div F] [∀ i, OfNat F i] (xs : List F) : List F :=
-  let term (x : F) : F :=
-    let oth := xs.filter (fun x' => x' != x)
-    let num := List.foldl Mul.mul 1 oth
-    let den := List.foldl Mul.mul 1 $ oth.map (fun x' => x' - x)
-    num / den
-  xs.map term
+instance : Bifunctor Shares where
+  bimap f g := Shares.mk ∘ List.map (fun s => ⟨ f s.x , g s.y ⟩) ∘ Shares.xys
 
-def interpolate [OfNat G 0] [Add G] [HMul F G G] (lagranges : List F) (vals : List G) : G :=
+instance [BEq F] : Mul (Shares F G) where
+  mul
+  | ⟨ us ⟩ , ⟨ vs ⟩ => ⟨ List.append (us.filter ((vs.map Share.x).notElem ∘ Share.x)) vs ⟩
+
+-- TODO: Consider making `Shares` an instance of `Monoid`.
+-- TODO: Use `Add` for piecewise addition of `Shares`.
+
+variable {F : Type}
+
+[∀ i, OfNat F i]
+[BEq F]
+[Add F]
+[Sub F]
+[Mul F]
+[Div F]
+
+namespace Shares
+
+  def coefficients (pubs : Shares F G) : Shares F F :=
+    let term (xy : Share F G) : Share F F:=
+      let x := xy.x
+      let oth := (pubs.xys.map Share.x).filter (fun x' => x' != x)
+      let num := List.foldl Mul.mul 1 oth
+      let den := List.foldl Mul.mul 1 $ oth.map (fun x' => x' - x)
+      Share.mk x $ num / den
+    Shares.mk $ pubs.xys.map term
+
+  def count : Shares F G → Nat :=
+    List.length ∘ Shares.xys
+
+end Shares
+
+namespace PrivShares
+
+  def pubShares (_ : PrivShares F n) : Shares F Unit :=
+    Shares.mk $ (List.range n).map (fun i => Share.mk (OfNat.ofNat $ Add.add 1 i) ())
+
+  def toShares (privs : PrivShares F n) : Shares F F :=
+    Shares.mk $ List.zipWith Share.mk ((List.range n).map (fun i => OfNat.ofNat $ Add.add 1 i)) privs.ys.toList
+
+  def coefficients : PrivShares F n → Shares F F :=
+    Shares.coefficients ∘ PrivShares.pubShares
+
+end PrivShares
+
+namespace Polynomial
+
+  def toShares {parties : Nat} (poly : Polynomial threshold F) : PrivShares F parties :=
+    PrivShares.mk $ Vector.ofFn (fun i => poly.f $ OfNat.ofNat $ i.val + 1)
+
+end Polynomial
+
+def share [Monad m] [RandomGen g] [Random m F] {parties : Nat} (secret : F) (threshold : Nat) : RandGT g m (PrivShares F parties) :=
+  Polynomial.toShares <$> randomPolynomial secret (threshold - 1)
+
+variable {G : Type}
+
+[OfNat G 0]
+[Add G]
+[HMul F G G]
+
+def interpolate (lagranges : List F) (vals : List G) : G :=
   (List.zipWith HMul.hMul lagranges vals).foldl Add.add 0
 
-def aggregate [OfNat G 0] [BEq F] [Add F] [Mul F] [Sub F] [Add G] [HMul F G G] [Div F] [∀ i, OfNat F i] (xs : List F) (vals : List G) : G :=
-  interpolate (coefficients xs) vals
-
-def recover [BEq F] [Add F] [Sub F] [Mul F] [Div F] [∀ i, OfNat F i] (shares : List (Share F)) : F :=
-  aggregate (shares.map Share.x) (shares.map Share.y)
+def assemble (shares : Shares F G) : G :=
+  let coefs := shares.coefficients.xys.map Share.y
+  let vals := shares.xys.map Share.y
+  interpolate coefs vals
 
 
 end Crypto.SSS

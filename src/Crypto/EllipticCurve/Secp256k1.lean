@@ -1,9 +1,9 @@
-import Crypto.Field.Fp
 import Crypto.EllipticCurve
+import Crypto.Field.Fp
 
 open Crypto
-open Crypto.Field
 open Crypto.EllipticCurve
+open Crypto.Field
 
 
 namespace Crypto.EllipticCurve

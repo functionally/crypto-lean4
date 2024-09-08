@@ -13,7 +13,7 @@ instance : Serializable ByteArray where
   decode := some
 
 instance : Serializable String where
-  encode := ByteArray.mk ∘ Array.mk ∘ List.map (Nat.toUInt8 ∘ Char.toNat) ∘ String.data
+  encode := String.toUTF8
   decode := some ∘ String.fromUTF8Unchecked -- FIXME: Check this.
 
 
@@ -27,43 +27,43 @@ namespace Serial
   open Words
 
   -- FIXME: Prove termination.
-  -- FIXME: Test endianness.
   private partial def natFromUInt32s (x : Array UInt32) : Nat :=
     match x.size with
     | 0 => 0
     | 1 => (x.get! 0).toNat
-    | n => (x.get! 0).toNat <<< 32 + natFromUInt32s (x.extract 1 n)
+    | n => (x.get! 0).toNat <<< (32 * (x.size - 1)) + natFromUInt32s (x.extract 1 n)
 
   -- FIXME: Prove termination.
-  -- FIXME: Test endianness.
   private partial def natFromUInt64s (x : Array UInt64) : Nat :=
     match x.size with
     | 0 => 0
     | 1 => (x.get! 0).toNat
-    | n => (x.get! 0).toNat <<< 64 + natFromUInt64s (x.extract 1 n)
+    | n => (x.get! 0).toNat <<< (64 * (x.size - 1)) + natFromUInt64s (x.extract 1 n)
+
+  -- FIXME: Prove termination.
+  private partial def natToUInt32s (x : Nat) : List UInt32 :=
+    if x < UInt32.size
+      then [x.toUInt32]
+      else (x % UInt32.size).toUInt32 :: natToUInt32s (x / UInt32.size)
+
+  -- FIXME: Prove termination.
+  private partial def natToUInt64s (x : Nat) : List UInt64 :=
+    if x < UInt64.size
+      then [x.toUInt64]
+      else (x % UInt64.size).toUInt64 :: natToUInt64s (x / UInt64.size)
 
   instance instWordsNatUInt32 : Words Nat UInt32 where
-    toWords i :=
-      Array.map UInt32.ofNat
-        #[
-           i / UInt32.size
-         , i % UInt32.size
-         ]
+    toWords := List.toArray ∘ List.reverse ∘ natToUInt32s
     fromWords := natFromUInt32s
 
   instance instWordsNatUInt64 : Words Nat UInt64 where
-    toWords i :=
-      Array.map UInt64.ofNat
-        #[
-           i / UInt64.size
-         , i % UInt64.size
-         ]
+    toWords := List.toArray ∘ List.reverse ∘ natToUInt64s
     fromWords := natFromUInt64s
 
   private def bytesToUInt32s (x : Array UInt8) : Array UInt32 :=
     let n := x.size
-    let k := 4 - n % 4
-    let u := UInt32.ofNat ∘ Nat.sum $ (List.range $ k).map (fun i => (x.get! i).toNat <<< (8 * (3 - i)))
+    let k := min 4 n
+    let u := UInt32.ofNat ∘ Nat.sum $ (List.range k).map (fun i => (x.get! i).toNat <<< (8 * (3 - i)))
     if n < 5
       then #[u]
       else #[u] ++ bytesToUInt32s (x.extract 4 n)
@@ -71,8 +71,8 @@ namespace Serial
 
   private def bytesToUInt64s (x : Array UInt8) : Array UInt64 :=
     let n := x.size
-    let k := 8 - n % 8
-    let u := UInt64.ofNat ∘ Nat.sum $ (List.range $ k).map (fun i => (x.get! i).toNat <<< (8 * (7 - i)))
+    let k := min 8 n
+    let u := UInt64.ofNat ∘ Nat.sum $ (List.range k).map (fun i => (x.get! i).toNat <<< (8 * (7 - i)))
     if n < 9
       then #[u]
       else #[u] ++ bytesToUInt64s (x.extract 8 n)
@@ -115,6 +115,7 @@ namespace Serial
       ∘ ByteArray.toList
 
   -- FIXME: Add inverse of `bytesToHex`.
+
 
 end Serial
 
