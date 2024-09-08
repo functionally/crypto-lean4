@@ -1,4 +1,6 @@
 
+import Crypto.DKG
+
 import Crypto.Field.Fp
 import Crypto.Field.Fp.Test
 
@@ -12,9 +14,11 @@ import Crypto.ECDH.Test
 import Crypto.ECDSA
 import Crypto.ECDSA.Test
 
-import Crypto.DKG
+import Crypto.ECIES
 
 import Crypto.Hash
+import Crypto.Hash.Test
+
 import Crypto.Hash.SHA2
 import Crypto.Hash.SHA2.Test
 
