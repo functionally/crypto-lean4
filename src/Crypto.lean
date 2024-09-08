@@ -21,6 +21,7 @@ import Crypto.Hash.SHA2.Test
 import Crypto.MPC
 
 import Crypto.Serial
+import Crypto.Serial.Test
 
 import Crypto.SSS
 import Crypto.SSS.Test

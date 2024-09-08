@@ -14,18 +14,19 @@ open LSpec
 
 namespace Crypto.ECDSA.Test
 
+variable {ec : EllipticCurve (Fp p)}
 
-structure TestCase {ec : EllipticCurve (Fp p)} (g : Group ec) where
+structure TestCase  (g : Group ec) where
   keyPair : Group.KeyPair g
   hash : Fp g.n
-  rs : Fp p × Fp g.n
+  sig : Signature g
 deriving Repr
 
-def genTestable {ec : EllipticCurve (Fp p)} (g : Group ec) : SlimCheck.Gen (TestCase g) :=
+def genTestable (g : Group ec) : SlimCheck.Gen (TestCase g) :=
   do
     let kp ← (Random.random : Rand (Group.KeyPair g))
     let z ← (Random.random : Rand (Fp g.n))
-    let rs ← (sign kp z : Rand (Fp p × Fp g.n))
+    let rs ← (sign kp z : Rand (Signature g))
     pure $ TestCase.mk kp z rs
 
 instance : SlimCheck.Shrinkable (TestCase g) where
@@ -34,7 +35,7 @@ instance : SlimCheck.Shrinkable (TestCase g) where
 instance : SlimCheck.SampleableExt (TestCase g) :=
   SlimCheck.SampleableExt.mkSelfContained $ genTestable g
 
-#lspec check "Verify signature" (∀ tc : TestCase Secp256k1, verify tc.keyPair.pubKey tc.hash tc.rs)
+#lspec check "Verify signature" (∀ tc : TestCase Secp256k1, verify tc.keyPair.pubKey tc.hash tc.sig)
 
 
 end Crypto.ECDSA.Test

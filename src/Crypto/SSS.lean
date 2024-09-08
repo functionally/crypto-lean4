@@ -31,6 +31,8 @@ deriving Repr, DecidableEq, BEq
 instance : Functor (Share F) where
   map f s := Share.mk s.x $ f s.y
 
+abbrev PrivShare F := Share F F
+
 -- TODO: Consider implementing this as a `HashMap`.
 structure Shares (F : Type) (G : Type) where
   xys : List (Share F G)

@@ -62,6 +62,9 @@ namespace Fp
 
 end Fp
 
+instance : Inhabited (Fp p) where
+  default := Fp.mk 0
+
 instance : OfNat (Fp p) n where
   ofNat := Fp.mk n
 

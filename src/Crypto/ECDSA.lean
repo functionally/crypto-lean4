@@ -12,29 +12,38 @@ namespace Crypto.ECDSA
 
 variable {p : Nat}
 variable {ec : EllipticCurve (Fp p)}
+
+structure Signature (g : EllipticCurve.Group ec) where
+  point : Fp g.n
+  proof : Fp g.n
+deriving Repr, DecidableEq, BEq, Inhabited
+
 variable {g : EllipticCurve.Group ec}
 
+def rawSign (kp : Group.KeyPair g) (z : Fp g.n) (k : Fp g.n) (R : Point ec) : Signature g :=
+  let r := R.x.castFp
+  let s := (z + r.castFp * kp.prv.castFp) / k
+  ⟨ r , s ⟩
 
-def trySign (kp : Group.KeyPair g) (z : Fp g.n) (k : Fp g.n) : Option (Fp p × Fp g.n) :=
-  let P : Point ec := k.val * g.G
-  let r : Fp p := P.x
-  let s : Fp g.n := (z + r.castFp * kp.prv.castFp) / k
-  if r = 0 ∨ s = 0
+def trySign (kp : Group.KeyPair g) (z : Fp g.n) (k : Fp g.n) : Option (Signature g) :=
+  let R := k.val * g.G
+  let rs := rawSign kp z k R
+  if rs.point = 0 ∨ rs.proof = 0
     then none
-    else some ⟨ r , s ⟩
+    else some rs
 
-partial def sign [RandomGen g'] [Monad m] (kp : Group.KeyPair g) (z : Fp g.n) : RandGT g' m (Fp p × Fp g.n) :=
+partial def sign [RandomGen gen] [Monad m] (kp : Group.KeyPair g) (z : Fp g.n) : RandGT gen m (Signature g) :=
   do
     let k ← Random.random
     match trySign kp z k with
     | none => sign kp z
     | some result => pure result
 
-def verify {p : Nat} {ec : EllipticCurve (Fp p)} {g : EllipticCurve.Group ec} (pk : EllipticCurve.Group.PubKey g) (z : Fp g.n) : Fp p × Fp g.n → Bool
+def verify (pk : EllipticCurve.Group.PubKey g) (z : Fp g.n) : Signature g → Bool
 | ⟨ r , s ⟩ => let u₁ := z / s
                let u₂ := r.castFp / s
                let P := u₁ * g.G + u₂ * pk.pub
-               r = P.x
+               r = P.x.castFp
 
 
 end Crypto.ECDSA
