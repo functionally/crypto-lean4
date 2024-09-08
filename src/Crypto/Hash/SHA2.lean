@@ -259,8 +259,9 @@ def pad (b : Bits) [Words Nat (uint b)] [Words ByteArray (uint b)] (x : ByteArra
   let n := m * 512
   let L := 8 * x.size
   let K := n - (L + 1 + m * 64) % n
-  let y := x.append $ ByteArray.mk #[0x80] ++ ByteArray.mk (Array.mk $ List.replicate ((K - 7) / 8) 0)
-  toWords y ++ toWords L
+  let L' := toWords L
+  let y := x.append $ ByteArray.mk #[0x80] ++ ByteArray.mk (Array.mk $ List.replicate ((K - 7) / 8 + 2 * m - L'.size) 0)
+  toWords y ++ L'
 
 
 -- FIXME: Prove termination.
