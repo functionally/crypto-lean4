@@ -53,6 +53,9 @@ namespace Fp
       then some ⟨ (xi % p).toNat ⟩
       else none
 
+  def xor : Fp p → Fp p → Fp p
+  | ⟨ x ⟩ , ⟨ y ⟩ => ⟨ x.xor y ⟩
+
   def castFp : Fp p → Fp p' :=
     Fp.mk ∘ Fp.val
 
