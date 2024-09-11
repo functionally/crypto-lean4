@@ -5,8 +5,9 @@ import Crypto.Field.Fp
 import Crypto.Field.Fp.Test
 
 import Crypto.EllipticCurve
-import Crypto.EllipticCurve.Secp256k1
 import Crypto.EllipticCurve.Test
+
+import Crypto.EllipticCurve.Secp256k1
 
 import Crypto.EllipticCurve.ECDH
 import Crypto.EllipticCurve.ECDH.Test
@@ -18,6 +19,7 @@ import Crypto.EllipticCurve.ECIES
 import Crypto.EllipticCurve.ECIES.Test
 
 import Crypto.EllipticCurve.Schnorr
+import Crypto.EllipticCurve.Schnorr.Test
 
 import Crypto.EllipticCurve.VRF
 
