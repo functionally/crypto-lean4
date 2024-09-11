@@ -1,71 +1,61 @@
 import Crypto.EllipticCurve
-import Crypto.EllipticCurve.ECDH
-import Crypto.EllipticCurve.Secp256k1
 import Crypto.Field.Fp
-import Crypto.Hash.SHA2
+import Crypto.Serial
+import Mathlib.Control.Random
 import LSpec
 
 open Crypto
 open Crypto.EllipticCurve
-open Crypto.EllipticCurve.ECDH
 open Crypto.EllipticCurve.Group
 open Crypto.Field
-open Crypto.Hash.SHA2
 open LSpec
 
 
 namespace Crypto.EllipticCurve.Schnorr
 
+
+variable {p : Nat}
+variable {ec : EllipticCurve (Fp p)}
+
+
 -- https://medium.com/@francomangone18/cryptography-101-protocols-galore-7b858e6a38bf
 
-abbrev g := Secp256k1
+structure Signature (g : Group ec) where
+  hash : Fp g.n
+  proof : Fp g.n
+deriving Repr, DecidableEq, BEq
 
-def alice : KeyPair Secp256k1 := keyPair 0xe32868331fa8ef0138de0de85478346aec5e3912b6029ae71691c384237a3eeb
+def sign [RandomGen gen] [Monad m] {g : Group ec} (h : ByteArray → Nat) (key : Group.KeyPair g) (message : ByteArray) : RandGT gen m (Signature g) :=
+  do
+    let r : Fp g.n ← Random.random
+    let R := r * g.G
+    let e := Fp.mk ∘ h $ ByteArray.append (Serial.natToBytes R.x.val) message
+    let s := r - e * key.prv
+    pure ⟨ e , s ⟩
 
-def r : Fp g.n := 2342211
-
-def R := r * g.G
-#eval R
--- signature
-
-def message : ByteArray := Serializable.encode "abdde"
-#eval message
-
-def rby : ByteArray := Serial.Words.fromWords (Serial.Words.toWords R.x.val : Array UInt32)
-#eval rby
-
-
-def e : Fp g.n := Fp.mk $ sha256 $ rby.append message
-#eval e
-
-def s := r - e * alice.prv
-
-def deliver := Prod.mk s e
-
-def R' := s * g.G + e * alice.pub
-#eval R'
-#eval R = R'
+def verify (h : ByteArray → Nat) (key : Group.PubKey g) (message : ByteArray) : Signature g → Bool
+| ⟨ e , s ⟩ =>
+    let R := s * g.G + e * key.pub
+    let e' := Fp.mk ∘ h $ ByteArray.append (Serial.natToBytes R.x.val) message
+    e = e'
 
 
--- protocol
+structure Response (g : Group ec) where
+  public : Point ec
+  proof : Fp g.n
+deriving Repr, DecidableEq, BEq
 
--- alice : prover
-def prv := 59174
-def pub := prv * g.G
-def commitment := 2324811
-def Rc := commitment * g.G
+def commit [RandomGen gen] [Monad m] {g : Group ec} : RandGT gen m (Group.KeyPair g) :=
+  Random.random
 
---bob : verifier
-def challenge := 48191
+def challenge {g : Group ec} (r : Group.KeyPair g) (secret : Fp g.n) (chal : Fp g.n) : Response g :=
+  let pub := secret * g.G
+  let s := r.prv + chal * secret
+  ⟨ pub , s ⟩
 
---alice
-def ss := commitment + challenge * prv
-
---bob
-#eval ss * g.G = Rc + challenge * pub
-
-
--- *** Use for TSS because of linearity
+def confirm {g : Group ec} (r : Group.PubKey g) (chal : Fp g.n) : Response g → Bool
+| ⟨ pub , s ⟩ =>
+    s * g.G = r.pub + chal * pub
 
 
 end Crypto.EllipticCurve.Schnorr
