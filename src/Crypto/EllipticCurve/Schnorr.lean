@@ -2,13 +2,11 @@ import Crypto.EllipticCurve
 import Crypto.Field.Fp
 import Crypto.Serial
 import Mathlib.Control.Random
-import LSpec
 
 open Crypto
 open Crypto.EllipticCurve
 open Crypto.EllipticCurve.Group
 open Crypto.Field
-open LSpec
 
 
 namespace Crypto.EllipticCurve.Schnorr
@@ -56,6 +54,22 @@ def challenge {g : Group ec} (r : Group.KeyPair g) (secret : Fp g.n) (chal : Fp 
 def confirm {g : Group ec} (r : Group.PubKey g) (chal : Fp g.n) : Response g → Bool
 | ⟨ pub , s ⟩ =>
     s * g.G = r.pub + chal * pub
+
+
+def combinePubKeys {g : Group ec} : List (Group.PubKey g) → Group.PubKey g :=
+  Group.PubKey.mk ∘ List.foldl (fun acc => Add.add acc ∘ Group.PubKey.pub) Point.infinity
+
+def partialsign [RandomGen gen] [Monad m] {g : Group ec} (h : ByteArray → Nat) (key : Group.KeyPair g) (k : Fp g.n) (R : Point ec) (message : ByteArray) : RandGT gen m (Signature g) :=
+  do
+    let e := Fp.mk ∘ h $ ByteArray.append (Serial.natToBytes R.x.val) message
+    let s := k - e * key.prv
+    pure ⟨ e , s ⟩
+
+def multisig {g : Group ec} (ss :List (Signature g)) (h : ss ≠ []): Signature g :=
+  ⟨
+    (ss.head h).hash
+  , ss.foldl (fun acc x => acc + x.proof) 0
+  ⟩
 
 
 end Crypto.EllipticCurve.Schnorr

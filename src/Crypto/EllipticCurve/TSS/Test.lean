@@ -1,19 +1,19 @@
 import Crypto.EllipticCurve.Secp256k1
+import Crypto.EllipticCurve.TSS
 import Crypto.Field.Fp
 import Crypto.SSS
 import Crypto.SSS.Test
-import Crypto.TSS
 import LSpec
 import Mathlib.Control.Random
 
 open Crypto
 open Crypto.EllipticCurve
+open Crypto.EllipticCurve.TSS
 open Crypto.Field
-open Crypto.TSS
 open LSpec
 
 
-namespace Crypto.TSS.Test
+namespace Crypto.EllipticCurve.TSS.Test
 
 
 variable {p : Nat}
@@ -54,4 +54,4 @@ instance : SlimCheck.SampleableExt (TestCase g) :=
   $ check "public key" (∀ tc : TestCase Secp256k1, tc.shares.xys.length < tc.threshold ∨ assemble tc.pubs = tc.key.pub)
 
 
-end Crypto.TSS.Test
+end Crypto.EllipticCurve.TSS.Test

@@ -21,6 +21,9 @@ import Crypto.EllipticCurve.ECIES.Test
 import Crypto.EllipticCurve.Schnorr
 import Crypto.EllipticCurve.Schnorr.Test
 
+import Crypto.EllipticCurve.TSS
+import Crypto.EllipticCurve.TSS.Test
+
 import Crypto.EllipticCurve.VRF
 
 import Crypto.Hash
@@ -36,8 +39,5 @@ import Crypto.Serial.Test
 
 import Crypto.SSS
 import Crypto.SSS.Test
-
-import Crypto.TSS
-import Crypto.TSS.Test
 
 import Crypto.VSS
