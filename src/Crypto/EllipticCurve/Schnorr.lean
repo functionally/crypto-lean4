@@ -1,14 +1,13 @@
 import Crypto.EllipticCurve
 import Crypto.Field.Fp
 import Crypto.Serial
+import Crypto.SSS
 import Mathlib.Control.Random
-import LSpec
 
 open Crypto
 open Crypto.EllipticCurve
 open Crypto.EllipticCurve.Group
 open Crypto.Field
-open LSpec
 
 
 namespace Crypto.EllipticCurve.Schnorr
@@ -56,6 +55,39 @@ def challenge {g : Group ec} (r : Group.KeyPair g) (secret : Fp g.n) (chal : Fp 
 def confirm {g : Group ec} (r : Group.PubKey g) (chal : Fp g.n) : Response g → Bool
 | ⟨ pub , s ⟩ =>
     s * g.G = r.pub + chal * pub
+
+
+def combinePubKeys {g : Group ec} : List (Group.PubKey g) → Group.PubKey g :=
+  Group.PubKey.mk ∘ List.foldl (fun acc => Add.add acc ∘ Group.PubKey.pub) Point.infinity
+
+def partialsign [RandomGen gen] [Monad m] {g : Group ec} (h : ByteArray → Nat) (key : Group.KeyPair g) (k : Fp g.n) (R : Point ec) (message : ByteArray) : RandGT gen m (Signature g) :=
+  do
+    let e := Fp.mk ∘ h $ ByteArray.append (Serial.natToBytes R.x.val) message
+    let s := k - e * key.prv
+    pure ⟨ e , s ⟩
+
+def multisig {g : Group ec} (shares : List (Signature g)) : Option (Signature g) :=
+  match shares with
+  | [] => none
+  | s :: ss => if ss.all (fun s' => s.hash == s'.hash)
+               then some
+                    ⟨
+                      s.hash
+                    , ss.foldl (fun acc x => acc + x.proof) s.proof
+                    ⟩
+               else none
+
+
+def thresholdsig {g : Group ec} (shares : SSS.Shares (Fp g.n) (Signature g)) : Option (Signature g) :=
+  match shares.xys with
+  | [] => none
+  | s :: ss => if ss.all (fun s' => s.y.hash == s'.y.hash)
+                 then some
+                        ⟨
+                          s.y.hash
+                        , SSS.assemble $ Functor.map Signature.proof shares
+                        ⟩
+                 else none
 
 
 end Crypto.EllipticCurve.Schnorr
