@@ -75,4 +75,39 @@ namespace Protocol
 end Protocol
 
 
+namespace Multsig
+
+  structure TestCase (g : Group ec) where
+    keys : List (Group.KeyPair g)
+    nonces : List (Group.KeyPair g)
+    message : ByteArray
+    pub : Group.PubKey g
+    signature : Signature g
+  deriving Repr
+
+  instance : SlimCheck.Shrinkable (TestCase g) where
+    shrink _ := []
+
+  -- FIXME: Generalize to n keys.
+
+  instance {g : Group ec} : SlimCheck.SampleableExt (TestCase g) :=
+    SlimCheck.SampleableExt.mkSelfContained $ do
+      let key1 ← (Random.random : Rand (Group.KeyPair g))
+      let key2 ← (Random.random : Rand (Group.KeyPair g))
+      let pub := combinePubKeys [key1.pubKey, key2.pubKey]
+      let nonce1 ← (Random.random : Rand (Group.KeyPair g))
+      let nonce2 ← (Random.random : Rand (Group.KeyPair g))
+      let nonce := combinePubKeys [nonce1.pubKey, nonce2.pubKey]
+      let message' ← (Random.random : Rand (Fp g.n))
+      let message := Serial.natToBytes message'.val
+      let sig1 ← (partialsign h key1 nonce1.prv nonce.pub message : Rand (Signature g))
+      let sig2 ← (partialsign h key2 nonce2.prv nonce.pub message : Rand (Signature g))
+      let sig := multisig (sig1 :: sig2 :: []) (List.cons_ne_nil sig1 (sig2 :: []))
+      pure ⟨ [key1, key2], [nonce1, nonce2] , message , pub , sig ⟩
+
+  #lspec check "multisig" (∀ tc : TestCase Secp256k1, verify h tc.pub tc.message tc.signature)
+
+end Multsig
+
+
 end Crypto.EllipticCurve.Schnorr.Test
