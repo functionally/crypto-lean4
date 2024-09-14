@@ -1,8 +1,8 @@
 import Crypto.EllipticCurve.Secp256k1
 import Crypto.EllipticCurve.TSS
 import Crypto.Field.Fp
-import Crypto.SSS
-import Crypto.SSS.Test
+import Crypto.Polynomial.SSS
+import Crypto.Polynomial.SSS.Test
 import LSpec
 import Mathlib.Control.Random
 
@@ -10,6 +10,7 @@ open Crypto
 open Crypto.EllipticCurve
 open Crypto.EllipticCurve.TSS
 open Crypto.Field
+open Crypto.Polynomial
 open LSpec
 
 
@@ -33,21 +34,19 @@ namespace TestCase
 
 end TestCase
 
-def genTestable (g : EllipticCurve.Group ec) : SlimCheck.Gen (TestCase g) :=
-  do
-    let key ← (Group.randKeyPair : Rand (Group.KeyPair g))
-    let parties ← SlimCheck.Gen.choose Nat 1 10
-    let threshold ← SlimCheck.Gen.choose Nat 1 parties
-    let shares ← (share g key.prv threshold : Rand (SSS.PrivShares (field g) parties))
-    let parties' ← SlimCheck.Gen.choose Nat 0 parties
-    let shares' ← SSS.Shares.mk <$> SSS.Test.sublist parties' shares.toShares.xys
-    pure $ TestCase.mk key parties threshold shares'
-
 instance : SlimCheck.Shrinkable (TestCase g) where
   shrink _ := []
 
 instance : SlimCheck.SampleableExt (TestCase g) :=
-  SlimCheck.SampleableExt.mkSelfContained $ genTestable g
+  SlimCheck.SampleableExt.mkSelfContained $
+    do
+      let key ← (Group.randKeyPair : Rand (Group.KeyPair g))
+      let parties ← SlimCheck.Gen.choose Nat 1 10
+      let threshold ← SlimCheck.Gen.choose Nat 1 parties
+      let shares ← (share g key.prv threshold : Rand (SSS.PrivShares (field g) parties))
+      let parties' ← SlimCheck.Gen.choose Nat 0 parties
+      let shares' ← SSS.Shares.mk <$> SSS.Test.sublist parties' shares.toShares.xys
+      pure $ TestCase.mk key parties threshold shares'
 
 #lspec group "assemble"
   $ check "private key" (∀ tc : TestCase Secp256k1, tc.shares.count < tc.threshold ∨ SSS.assemble tc.shares = tc.key.prv)

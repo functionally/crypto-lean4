@@ -54,17 +54,15 @@ structure TestCase (g : EllipticCurve.Group ec) where
   bob : Group.KeyPair g
 deriving Repr
 
-def genTestable [Random Id (KeyPair g)] : SlimCheck.Gen (TestCase g):=
-  do
-    let alice ← (Random.random : Rand (KeyPair g))
-    let bob ← (Random.random : Rand (KeyPair g))
-    pure $ TestCase.mk alice bob
-
 instance : SlimCheck.Shrinkable Testcase where
   shrink _ := []
 
 instance [Repr (TestCase g)] [Random Id (KeyPair g)] : SlimCheck.SampleableExt (TestCase g) :=
-  SlimCheck.SampleableExt.mkSelfContained $ genTestable
+  SlimCheck.SampleableExt.mkSelfContained $
+    do
+      let alice ← (Random.random : Rand (KeyPair g))
+      let bob ← (Random.random : Rand (KeyPair g))
+      pure $ ⟨ alice , bob ⟩
 
 #lspec group "Shared secret"
   $ check "commutes" (∀ tc : TestCase Secp256k1, sharedSecret tc.alice.prv.val tc.bob.pub = sharedSecret tc.bob.prv.val tc.alice.pub)

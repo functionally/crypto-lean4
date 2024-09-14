@@ -1,22 +1,9 @@
+import Crypto.Polynomial
 import Mathlib.Control.Random
 import Mathlib.Data.Vector
 
 
-namespace Crypto.SSS
-
-
-structure Polynomial (n : Nat) (F : Type) where
-  private mk ::
-  f : F → F
-
-def randomPolynomial [RandomGen g] [Monad m] [Random m F] [Add F] [Mul F] (a₀ : F) (t : Nat) : RandGT g m (Polynomial t F) :=
-  match t with
-  | Nat.zero => pure $ Polynomial.mk (fun _ => a₀)
-  | Nat.succ t' => do
-                     let a₁ ← Random.random
-                     let p ← randomPolynomial a₁ t'
-                     let g x := a₀ + x * p.f x
-                     pure $ Polynomial.mk g
+namespace Crypto.Polynomial.SSS
 
 
 structure PrivShares (F : Type) (n : Nat) where
@@ -113,4 +100,4 @@ def assemble (shares : Shares F G) : G :=
   interpolate coefs vals
 
 
-end Crypto.SSS
+end Crypto.Polynomial.SSS
