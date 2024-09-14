@@ -5,7 +5,11 @@ import Crypto.Field.Fp.Test
 import Crypto.EllipticCurve
 import Crypto.EllipticCurve.Test
 
-import Crypto.EllipticCurve.Secp256k1
+import Crypto.EllipticCurve.SECG.Secp256k1
+import Crypto.EllipticCurve.SECG.Secp256r1
+import Crypto.EllipticCurve.SECG.Secp384r1
+import Crypto.EllipticCurve.SECG.Secp521r1
+import Crypto.EllipticCurve.SECG.Test
 
 import Crypto.EllipticCurve.ECDH
 import Crypto.EllipticCurve.ECDH.Test

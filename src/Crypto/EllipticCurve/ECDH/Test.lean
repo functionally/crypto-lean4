@@ -1,6 +1,6 @@
 import Crypto.EllipticCurve
 import Crypto.EllipticCurve.ECDH
-import Crypto.EllipticCurve.Secp256k1
+import Crypto.EllipticCurve.SECG.Secp256k1
 import LSpec
 
 open Crypto.EllipticCurve.ECDH
