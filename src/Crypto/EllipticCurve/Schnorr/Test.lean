@@ -91,23 +91,31 @@ namespace Multsig
   instance : SlimCheck.Shrinkable (TestCase g) where
     shrink _ := []
 
-  -- FIXME: Generalize to n keys.
-
   instance {g : Group ec} : SlimCheck.SampleableExt (TestCase g) :=
     SlimCheck.SampleableExt.mkSelfContained $
       do
-        let key1 ← (Random.random : Rand (Group.KeyPair g))
-        let key2 ← (Random.random : Rand (Group.KeyPair g))
-        let pub := combinePubKeys [key1.pubKey, key2.pubKey]
-        let nonce1 ← (Random.random : Rand (Group.KeyPair g))
-        let nonce2 ← (Random.random : Rand (Group.KeyPair g))
-        let nonce := combinePubKeys [nonce1.pubKey, nonce2.pubKey]
+        let n ← SlimCheck.Gen.choose Nat 2 5
+        let keys ←
+          (
+            Monad.sequence $ List.replicate n Random.random
+            : Rand (List (Group.KeyPair g))
+          )
+        let pub := combinePubKeys $ keys.map Group.KeyPair.pubKey
+        let nonces ←
+          (
+            Monad.sequence $ List.replicate n Random.random
+            : Rand (List (Group.KeyPair g))
+          )
+        let nonce := combinePubKeys $ nonces.map Group.KeyPair.pubKey
         let message' ← (Random.random : Rand (Fp g.n))
         let message := Serial.natToBytes message'.val
-        let sig1 := partialsign h key1 nonce1.prv nonce.pub message
-        let sig2 := partialsign h key2 nonce2.prv nonce.pub message
-        let sig := multisig (sig1 :: sig2 :: [])
-        pure ⟨ [key1, key2], [nonce1, nonce2] , message , pub , sig ⟩
+        let sigs :=
+          List.zipWith
+            (fun k n => partialsign h k n.prv nonce.pub message)
+            keys
+            nonces
+        let sig := multisig sigs
+        pure ⟨ keys , nonces , message , pub , sig ⟩
 
   #lspec check "multisig" (∀ tc : TestCase Secp256k1, (verify h tc.pub tc.message <$> tc.signature) = some true)
 
