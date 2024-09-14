@@ -2,12 +2,13 @@ import Crypto.EllipticCurve
 import Crypto.EllipticCurve.Schnorr
 import Crypto.EllipticCurve.Secp256k1
 import Crypto.Field.Fp
-import Crypto.SSS
+import Crypto.Polynomial.SSS
 import Crypto.Hash.SHA2
 import Mathlib.Control.Random
 import LSpec
 
 open Crypto.EllipticCurve
+open Crypto.Polynomial
 open Crypto.EllipticCurve.Schnorr
 open Crypto.Field
 open LSpec

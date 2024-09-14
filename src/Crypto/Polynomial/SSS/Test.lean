@@ -1,14 +1,14 @@
 import Crypto.Field.Fp
-import Crypto.SSS
+import Crypto.Polynomial.SSS
 import LSpec
 import Mathlib.Control.Random
 
 open Crypto.Field
-open Crypto.SSS
+open Crypto.Polynomial.SSS
 open LSpec
 
 
-namespace Crypto.SSS.Test
+namespace Crypto.Polynomial.SSS.Test
 
 
 def sublist (n : Nat) (xs : List a) : SlimCheck.Gen (List a) :=
@@ -42,4 +42,4 @@ instance : SlimCheck.SampleableExt (TestCase p) :=
     -- FIXME: The negative test could fail due to coincidence!
 
 
-end Crypto.SSS.Test
+end Crypto.Polynomial.SSS.Test

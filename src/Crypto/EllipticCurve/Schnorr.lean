@@ -1,12 +1,13 @@
 import Crypto.EllipticCurve
 import Crypto.Field.Fp
 import Crypto.Serial
-import Crypto.SSS
+import Crypto.Polynomial.SSS
 import Mathlib.Control.Random
 
 open Crypto
 open Crypto.EllipticCurve
 open Crypto.EllipticCurve.Group
+open Crypto.Polynomial
 open Crypto.Field
 
 

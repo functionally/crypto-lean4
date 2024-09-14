@@ -1,10 +1,11 @@
 import Crypto.EllipticCurve
 import Crypto.Field.Fp
-import Crypto.SSS
+import Crypto.Polynomial.SSS
 
 open Crypto
 open Crypto.EllipticCurve
 open Crypto.Field
+open Crypto.Polynomial
 
 
 namespace Crypto.EllipticCurve.TSS

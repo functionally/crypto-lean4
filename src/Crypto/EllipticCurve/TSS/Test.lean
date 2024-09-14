@@ -1,8 +1,8 @@
 import Crypto.EllipticCurve.Secp256k1
 import Crypto.EllipticCurve.TSS
 import Crypto.Field.Fp
-import Crypto.SSS
-import Crypto.SSS.Test
+import Crypto.Polynomial.SSS
+import Crypto.Polynomial.SSS.Test
 import LSpec
 import Mathlib.Control.Random
 
@@ -10,6 +10,7 @@ open Crypto
 open Crypto.EllipticCurve
 open Crypto.EllipticCurve.TSS
 open Crypto.Field
+open Crypto.Polynomial
 open LSpec
 
 
