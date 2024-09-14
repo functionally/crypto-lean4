@@ -21,21 +21,19 @@ structure TestCase (p : Nat) where
   shares : Shares (Fp p) (Fp p)
 deriving Repr
 
-def genTestable (p : Nat) : SlimCheck.Gen (TestCase p) :=
-  do
-    let secret ← (Fp.randFp : Rand (Fp p))
-    let parties ← SlimCheck.Gen.choose Nat 1 10
-    let threshold ← SlimCheck.Gen.choose Nat 1 parties
-    let shares ← (share secret threshold : Rand (PrivShares (Fp p) parties))
-    let parties' ← SlimCheck.Gen.choose Nat 0 parties
-    let shares' ← Shares.mk <$> sublist parties' shares.toShares.xys
-    pure $ TestCase.mk secret parties threshold shares'
-
 instance : SlimCheck.Shrinkable (TestCase p) where
   shrink _ := []
 
 instance : SlimCheck.SampleableExt (TestCase p) :=
-  SlimCheck.SampleableExt.mkSelfContained $ genTestable p
+  SlimCheck.SampleableExt.mkSelfContained $
+    do
+      let secret ← (Fp.randFp : Rand (Fp p))
+      let parties ← SlimCheck.Gen.choose Nat 1 10
+      let threshold ← SlimCheck.Gen.choose Nat 1 parties
+      let shares ← (share secret threshold : Rand (PrivShares (Fp p) parties))
+      let parties' ← SlimCheck.Gen.choose Nat 0 parties
+      let shares' ← Shares.mk <$> sublist parties' shares.toShares.xys
+      pure $ TestCase.mk secret parties threshold shares'
 
 #lspec
   group "assemble"

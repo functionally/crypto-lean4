@@ -39,12 +39,13 @@ namespace Signature
     shrink _ := []
 
   instance {g : Group ec} : SlimCheck.SampleableExt (TestCase g) :=
-    SlimCheck.SampleableExt.mkSelfContained $ do
-      let key ← (Random.random : Rand (Group.KeyPair g))
-      let message' ← (Random.random : Rand (Fp g.n))
-      let message := Serial.natToBytes message'.val
-      let sig ← (sign h key message : Rand (Signature g))
-      pure ⟨ key , message , sig ⟩
+    SlimCheck.SampleableExt.mkSelfContained $
+      do
+        let key ← (Random.random : Rand (Group.KeyPair g))
+        let message' ← (Random.random : Rand (Fp g.n))
+        let message := Serial.natToBytes message'.val
+        let sig ← (sign h key message : Rand (Signature g))
+        pure ⟨ key , message , sig ⟩
 
   #lspec check "verify ∘ sign" (∀ tc : TestCase Secp256k1, verify h tc.key.pubKey tc.message tc.signature)
 
@@ -63,13 +64,14 @@ namespace Protocol
     shrink _ := []
 
   instance {g : Group ec} : SlimCheck.SampleableExt (TestCase g) :=
-    SlimCheck.SampleableExt.mkSelfContained $ do
-      let rnd ← (commit : Rand (Group.KeyPair g))
-      let secret := rnd.prv
-      let commitment := rnd.pubKey
-      let chal ← (Random.random : Rand (Fp g.n))
-      let response := challenge rnd secret chal
-      pure ⟨ commitment , chal , response ⟩
+    SlimCheck.SampleableExt.mkSelfContained $
+      do
+        let rnd ← (commit : Rand (Group.KeyPair g))
+        let secret := rnd.prv
+        let commitment := rnd.pubKey
+        let chal ← (Random.random : Rand (Fp g.n))
+        let response := challenge rnd secret chal
+        pure ⟨ commitment , chal , response ⟩
 
   #lspec check "confirm ∘ challenge ∘ commit" (∀ tc : TestCase Secp256k1, confirm tc.commitment tc.chal tc.response)
 
@@ -92,19 +94,20 @@ namespace Multsig
   -- FIXME: Generalize to n keys.
 
   instance {g : Group ec} : SlimCheck.SampleableExt (TestCase g) :=
-    SlimCheck.SampleableExt.mkSelfContained $ do
-      let key1 ← (Random.random : Rand (Group.KeyPair g))
-      let key2 ← (Random.random : Rand (Group.KeyPair g))
-      let pub := combinePubKeys [key1.pubKey, key2.pubKey]
-      let nonce1 ← (Random.random : Rand (Group.KeyPair g))
-      let nonce2 ← (Random.random : Rand (Group.KeyPair g))
-      let nonce := combinePubKeys [nonce1.pubKey, nonce2.pubKey]
-      let message' ← (Random.random : Rand (Fp g.n))
-      let message := Serial.natToBytes message'.val
-      let sig1 := partialsign h key1 nonce1.prv nonce.pub message
-      let sig2 := partialsign h key2 nonce2.prv nonce.pub message
-      let sig := multisig (sig1 :: sig2 :: [])
-      pure ⟨ [key1, key2], [nonce1, nonce2] , message , pub , sig ⟩
+    SlimCheck.SampleableExt.mkSelfContained $
+      do
+        let key1 ← (Random.random : Rand (Group.KeyPair g))
+        let key2 ← (Random.random : Rand (Group.KeyPair g))
+        let pub := combinePubKeys [key1.pubKey, key2.pubKey]
+        let nonce1 ← (Random.random : Rand (Group.KeyPair g))
+        let nonce2 ← (Random.random : Rand (Group.KeyPair g))
+        let nonce := combinePubKeys [nonce1.pubKey, nonce2.pubKey]
+        let message' ← (Random.random : Rand (Fp g.n))
+        let message := Serial.natToBytes message'.val
+        let sig1 := partialsign h key1 nonce1.prv nonce.pub message
+        let sig2 := partialsign h key2 nonce2.prv nonce.pub message
+        let sig := multisig (sig1 :: sig2 :: [])
+        pure ⟨ [key1, key2], [nonce1, nonce2] , message , pub , sig ⟩
 
   #lspec check "multisig" (∀ tc : TestCase Secp256k1, (verify h tc.pub tc.message <$> tc.signature) = some true)
 
