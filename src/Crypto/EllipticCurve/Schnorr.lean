@@ -60,11 +60,10 @@ def confirm {g : Group ec} (r : Group.PubKey g) (chal : Fp g.n) : Response g →
 def combinePubKeys {g : Group ec} : List (Group.PubKey g) → Group.PubKey g :=
   Group.PubKey.mk ∘ List.foldl (fun acc => Add.add acc ∘ Group.PubKey.pub) Point.infinity
 
-def partialsign [RandomGen gen] [Monad m] {g : Group ec} (h : ByteArray → Nat) (key : Group.KeyPair g) (k : Fp g.n) (R : Point ec) (message : ByteArray) : RandGT gen m (Signature g) :=
-  do
-    let e := Fp.mk ∘ h $ ByteArray.append (Serial.natToBytes R.x.val) message
-    let s := k - e * key.prv
-    pure ⟨ e , s ⟩
+def partialsign {g : Group ec} (h : ByteArray → Nat) (key : Group.KeyPair g) (k : Fp g.n) (R : Point ec) (message : ByteArray) : Signature g :=
+  let e := Fp.mk ∘ h $ ByteArray.append (Serial.natToBytes R.x.val) message
+  let s := k - e * key.prv
+  ⟨ e , s ⟩
 
 def multisig {g : Group ec} (shares : List (Signature g)) : Option (Signature g) :=
   match shares with
