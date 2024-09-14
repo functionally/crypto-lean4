@@ -20,7 +20,7 @@ variable {ec : EllipticCurve (Fp p)}
 -- https://medium.com/@francomangone18/cryptography-101-protocols-galore-7b858e6a38bf
 
 structure Signature (g : Group ec) where
-  hash : Fp g.n
+  challenge : Fp g.n
   proof : Fp g.n
 deriving Repr, DecidableEq, BEq
 
@@ -68,10 +68,10 @@ def partialsign {g : Group ec} (h : ByteArray → Nat) (key : Group.KeyPair g) (
 def multisig {g : Group ec} (shares : List (Signature g)) : Option (Signature g) :=
   match shares with
   | [] => none
-  | s :: ss => if ss.all (fun s' => s.hash == s'.hash)
+  | s :: ss => if ss.all (fun s' => s.challenge == s'.challenge)
                then some
                     ⟨
-                      s.hash
+                      s.challenge
                     , ss.foldl (fun acc x => acc + x.proof) s.proof
                     ⟩
                else none
@@ -80,10 +80,10 @@ def multisig {g : Group ec} (shares : List (Signature g)) : Option (Signature g)
 def thresholdsig {g : Group ec} (shares : SSS.Shares (Fp g.n) (Signature g)) : Option (Signature g) :=
   match shares.xys with
   | [] => none
-  | s :: ss => if ss.all (fun s' => s.y.hash == s'.y.hash)
+  | s :: ss => if ss.all (fun s' => s.y.challenge == s'.y.challenge)
                  then some
                         ⟨
-                          s.y.hash
+                          s.y.challenge
                         , SSS.assemble $ Functor.map Signature.proof shares
                         ⟩
                  else none

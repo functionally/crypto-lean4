@@ -18,8 +18,8 @@ variable {ec : EllipticCurve (Fp p)}
 
 structure TestCase  (g : Group ec) where
   keyPair : Group.KeyPair g
-  hash : Fp g.n
-  sig : Signature g
+  item : Fp g.n
+  signature : Signature g
 deriving Repr
 
 instance : SlimCheck.Shrinkable (TestCase g) where
@@ -29,11 +29,11 @@ instance : SlimCheck.SampleableExt (TestCase g) :=
   SlimCheck.SampleableExt.mkSelfContained $
     do
       let kp ← (Random.random : Rand (Group.KeyPair g))
-      let z ← (Random.random : Rand (Fp g.n))
-      let rs ← (sign kp z : Rand (Signature g))
-      pure $ TestCase.mk kp z rs
+      let item ← (Random.random : Rand (Fp g.n))
+      let signature ← (sign kp item : Rand (Signature g))
+      pure $ ⟨ kp , item , signature ⟩
 
-#lspec check "Verify signature" (∀ tc : TestCase Secp256k1, verify tc.keyPair.pubKey tc.hash tc.sig)
+#lspec check "Verify signature" (∀ tc : TestCase Secp256k1, verify tc.keyPair.pubKey tc.item tc.signature)
 
 
 end Crypto.EllipticCurve.ECDSA.Test

@@ -62,7 +62,7 @@ instance [Repr (TestCase g)] [Random Id (KeyPair g)] : SlimCheck.SampleableExt (
     do
       let alice ← (Random.random : Rand (KeyPair g))
       let bob ← (Random.random : Rand (KeyPair g))
-      pure $ TestCase.mk alice bob
+      pure $ ⟨ alice , bob ⟩
 
 #lspec group "Shared secret"
   $ check "commutes" (∀ tc : TestCase Secp256k1, sharedSecret tc.alice.prv.val tc.bob.pub = sharedSecret tc.bob.prv.val tc.alice.pub)
