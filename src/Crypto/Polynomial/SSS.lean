@@ -83,7 +83,7 @@ namespace Polynomial
 end Polynomial
 
 def share [Monad m] [RandomGen g] [Random m F] {parties : Nat} (secret : F) (threshold : Nat) : RandGT g m (PrivShares F parties) :=
-  Polynomial.toShares <$> randomPolynomial secret (threshold - 1)
+  Polynomial.toShares <$> (randomPolynomial secret : RandGT g m (Polynomial (threshold - 1) F))
 
 variable {G : Type}
 

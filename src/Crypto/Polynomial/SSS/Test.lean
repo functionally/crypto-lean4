@@ -37,9 +37,8 @@ instance : SlimCheck.SampleableExt (TestCase p) :=
 
 #lspec
   group "assemble"
-    $ check "positive" (∀ tc : TestCase 101, tc.shares.count < tc.threshold ∨ tc.secret = assemble tc.shares)
-    $ check "negative" (∀ tc : TestCase 223, tc.shares.count ≥ tc.threshold ↔ ¬ tc.shares.xys.length = 0 ∧ tc.secret = assemble tc.shares)
-    -- FIXME: The negative test could fail due to coincidence!
+    $ check "Fp 101" (∀ tc : TestCase 101, tc.shares.count < tc.threshold ∨ tc.secret = assemble tc.shares)
+    $ check "Fp 223" (∀ tc : TestCase 223, tc.shares.count < tc.threshold ∨ tc.secret = assemble tc.shares)
 
 
 end Crypto.Polynomial.SSS.Test
