@@ -1,4 +1,4 @@
-import Crypto.EllipticCurve.Secp256k1
+import Crypto.EllipticCurve.SECG.Secp256k1
 import Crypto.EllipticCurve.TSS
 import Crypto.Field.Fp
 import Crypto.Polynomial.SSS

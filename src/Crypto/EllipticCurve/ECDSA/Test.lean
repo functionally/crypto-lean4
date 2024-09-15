@@ -1,6 +1,6 @@
 import Crypto.EllipticCurve
 import Crypto.EllipticCurve.ECDSA
-import Crypto.EllipticCurve.Secp256k1
+import Crypto.EllipticCurve.SECG.Secp256k1
 import Crypto.Field.Fp
 import LSpec
 import Mathlib.Control.Random

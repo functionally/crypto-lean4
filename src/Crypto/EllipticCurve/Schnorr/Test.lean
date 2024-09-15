@@ -1,6 +1,6 @@
 import Crypto.EllipticCurve
 import Crypto.EllipticCurve.Schnorr
-import Crypto.EllipticCurve.Secp256k1
+import Crypto.EllipticCurve.SECG.Secp256k1
 import Crypto.Field.Fp
 import Crypto.Polynomial.SSS
 import Crypto.Hash.SHA2
