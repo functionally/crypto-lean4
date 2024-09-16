@@ -4,7 +4,6 @@ namespace Crypto
 
 
 structure Polynomial (n : Nat) (F : Type) where
-  private mk ::
   aᵢ : List F
 deriving Repr, DecidableEq, BEq
 
@@ -22,12 +21,12 @@ namespace Polynomial
 
   variable {F : Type}
 
-  [OfNat F 0]
+  [Inhabited F]
   [Add F]
   [Mul F]
 
   private def eval (x : F) : List F → F
-  | [] => 0
+  | [] => Inhabited.default
   | a :: as => a + x * eval x as
 
   def f (x : F) : Polynomial n F → F :=

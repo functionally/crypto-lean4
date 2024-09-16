@@ -40,6 +40,7 @@ instance [BEq F] : Mul (Shares F G) where
 variable {F : Type}
 
 [∀ i, OfNat F i]
+[Inhabited F]
 [BEq F]
 [Add F]
 [Sub F]
@@ -73,26 +74,40 @@ namespace PrivShares
   def coefficients : PrivShares F n → Shares F F :=
     Shares.coefficients ∘ PrivShares.pubShares
 
+  def confirm [HPow F Nat F] [Inhabited G] [BEq G] [HMul F G G] [Add G] (i : F) (s : G) (comms : List G) : Bool :=
+    let s' :=
+      List.foldl (fun acc xy => acc + (i ^ xy.fst) * (xy.snd : G)) Inhabited.default
+        $ List.zip (List.range $ comms.length) comms
+    s == s'
+
 end PrivShares
 
 namespace Polynomial
 
-  def toShares {parties : Nat} (poly : Polynomial threshold F) : PrivShares F parties :=
+  def toShares [Inhabited F] {parties : Nat} (poly : Polynomial threshold F) : PrivShares F parties :=
     PrivShares.mk $ Vector.ofFn (fun i => poly.f $ OfNat.ofNat $ i.val + 1)
+
+  def commitments [HMul F G G] (g : G) : Polynomial n F → List G :=
+    List.map (flip HMul.hMul g) ∘ Polynomial.aᵢ
 
 end Polynomial
 
-def share [Monad m] [RandomGen g] [Random m F] {parties : Nat} (secret : F) (threshold : Nat) : RandGT g m (PrivShares F parties) :=
-  Polynomial.toShares <$> (randomPolynomial secret : RandGT g m (Polynomial (threshold - 1) F))
+def share [Monad m] [RandomGen gen] [Random m F] [Inhabited F] {parties : Nat} (secret : F) (threshold : Nat) : RandGT gen m (PrivShares F parties) :=
+  Polynomial.toShares <$> (randomPolynomial secret : RandGT gen m (Polynomial (threshold - 1) F))
 
 variable {G : Type}
 
-[OfNat G 0]
+[Inhabited G]
 [Add G]
 [HMul F G G]
 
+def shareWithCommitments [Monad m] [RandomGen gen] [Random m F] {parties : Nat} (secret : F) (threshold : Nat) (g : G): RandGT gen m (PrivShares F parties × List G) :=
+  do
+    let poly : Polynomial (threshold - 1) F ← randomPolynomial secret
+    pure $ ⟨ Polynomial.toShares poly , Polynomial.commitments g poly ⟩
+
 def interpolate (lagranges : List F) (vals : List G) : G :=
-  (List.zipWith HMul.hMul lagranges vals).foldl Add.add 0
+  (List.zipWith HMul.hMul lagranges vals).foldl Add.add Inhabited.default
 
 def assemble (shares : Shares F G) : G :=
   let coefs := shares.coefficients.xys.map Share.y
