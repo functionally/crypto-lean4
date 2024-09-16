@@ -39,8 +39,8 @@ namespace EllipticCurve
   | infinity : Point ec
   deriving Repr, DecidableEq, BEq
 
-  instance : OfNat (Point ec) 0 where
-    ofNat := Point.infinity
+  instance : Inhabited (Point ec) where
+    default := Point.infinity
 
   namespace Point
 
