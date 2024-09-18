@@ -14,7 +14,7 @@ def getOutFile (p : Parsed) : System.FilePath :=
 
 def bytesToHexExec (p : Parsed) : IO UInt32 :=
   do
-    API.BytesToHex (getInFile p) (getOutFile p)
+    API.bytesToHex (getInFile p) (getOutFile p)
     pure 0
 
 def bytesToHex : Cmd := `[Cli|
@@ -26,11 +26,36 @@ def bytesToHex : Cmd := `[Cli|
 ]
 
 
+def HashAlg : ParamType :=
+  ParamType.mk
+    "Hash algorithm"
+    $ not ∘ BEq.beq none ∘ API.parseHashAlgorithm
+
+def hashExec (p : Parsed) : IO UInt32 :=
+  match API.parseHashAlgorithm (p.positionalArg! "alg").value with
+  | some alg =>
+      do
+        API.hash alg (getInFile p) (getOutFile p)
+        pure 0
+  | none => pure 0
+
+def hash : Cmd := `[Cli|
+  hash VIA hashExec;
+  "Hash bytes."
+  FLAGS:
+    i, input  : String ; "Input file."
+    o, output : String ; "Output file."
+  ARGS:
+    alg : HashAlg; "SHA2_224 | SHA2_256 | SHA2_384 | SHA2_512"
+]
+
+
 def crypto : Cmd := `[Cli|
   crypto NOOP;
   "Cryptographic operations."
   SUBCOMMANDS:
-    bytesToHex
+    bytesToHex;
+    hash
 ]
 
 
