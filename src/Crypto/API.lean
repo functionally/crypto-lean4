@@ -9,16 +9,17 @@ namespace Crypto.API
 
 
 def bytesToHex (inFile : System.FilePath) (outFile : System.FilePath) : IO Unit :=
-  IO.FS.writeFile outFile
-    ∘ Serial.bytesToHex
-    =<< IO.FS.readBinFile inFile
+  do
+    let src ← IO.FS.readBinFile inFile
+    let dst := Serial.bytesToHex src
+    IO.FS.writeFile outFile $ dst ++ "\n"
 
 
 def bytesToNat (inFile : System.FilePath) (outFile : System.FilePath) : IO Unit :=
   do
     let src ← IO.FS.readBinFile inFile
     let dst : Nat := Serial.Words.fromWords src.toList.toArray
-    IO.FS.writeFile outFile $ toString dst
+    IO.FS.writeFile outFile $ toString dst ++ "\n"
 
 
 def parseHashAlgorithm : String → Option (CHash.Algorithm)
@@ -29,11 +30,14 @@ def parseHashAlgorithm : String → Option (CHash.Algorithm)
 | _ => none
 
 def hash (alg : CHash.Algorithm) (inFile : System.FilePath) (outFile : System.FilePath) : IO Unit :=
-  IO.FS.writeFile outFile
-    ∘ Serial.bytesToHex
-    ∘ CHash.data
-    ∘ alg.chash
-    =<< IO.FS.readBinFile inFile
+  do
+    let src ← IO.FS.readBinFile inFile
+    let dst :=
+      Serial.bytesToHex
+        ∘ CHash.data
+        ∘ alg.chash
+        $ src
+    IO.FS.writeFile outFile $ dst ++ "\n"
 
 
 end Crypto.API
