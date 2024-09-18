@@ -14,6 +14,13 @@ def bytesToHex (inFile : System.FilePath) (outFile : System.FilePath) : IO Unit 
     =<< IO.FS.readBinFile inFile
 
 
+def bytesToNat (inFile : System.FilePath) (outFile : System.FilePath) : IO Unit :=
+  do
+    let src ← IO.FS.readBinFile inFile
+    let dst : Nat := Serial.Words.fromWords src.toList.toArray
+    IO.FS.writeFile outFile $ toString dst
+
+
 def parseHashAlgorithm : String → Option (CHash.Algorithm)
 | "SHA2_224" => some CHash.Algorithm.SHA2_224
 | "SHA2_256" => some CHash.Algorithm.SHA2_256

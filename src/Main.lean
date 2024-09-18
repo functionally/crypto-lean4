@@ -26,6 +26,20 @@ def bytesToHex : Cmd := `[Cli|
 ]
 
 
+def bytesToNatExec (p : Parsed) : IO UInt32 :=
+  do
+    API.bytesToNat (getInFile p) (getOutFile p)
+    pure 0
+
+def bytesToNat : Cmd := `[Cli|
+  bytesToNat VIA bytesToNatExec;
+  "Convert bytes to a natural number."
+  FLAGS:
+    i, input  : String ; "Input file."
+    o, output : String ; "Output file."
+]
+
+
 def HashAlg : ParamType :=
   ParamType.mk
     "Hash algorithm"
@@ -55,6 +69,7 @@ def crypto : Cmd := `[Cli|
   "Cryptographic operations."
   SUBCOMMANDS:
     bytesToHex;
+    bytesToNat;
     hash
 ]
 
