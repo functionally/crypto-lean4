@@ -32,11 +32,11 @@ namespace CHash
     | SHA2_384 => 56
     | SHA2_512 => 64
 
-  def chash [Serializable a] : a → (alg : Algorithm) → CHash alg.length
-  | x , SHA2_224 => CHash.mk ∘ SHA2.sha224 $ Serializable.encode x
-  | x , SHA2_256 => CHash.mk ∘ SHA2.sha256 $ Serializable.encode x
-  | x , SHA2_384 => CHash.mk ∘ SHA2.sha384 $ Serializable.encode x
-  | x , SHA2_512 => CHash.mk ∘ SHA2.sha512 $ Serializable.encode x
+    def chash [Serializable a] : a → (alg : Algorithm) → CHash alg.length
+    | x , SHA2_224 => CHash.mk ∘ SHA2.sha224 $ Serializable.encode x
+    | x , SHA2_256 => CHash.mk ∘ SHA2.sha256 $ Serializable.encode x
+    | x , SHA2_384 => CHash.mk ∘ SHA2.sha384 $ Serializable.encode x
+    | x , SHA2_512 => CHash.mk ∘ SHA2.sha512 $ Serializable.encode x
 
   end Algorithm
 
