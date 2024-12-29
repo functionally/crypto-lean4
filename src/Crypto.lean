@@ -1,4 +1,5 @@
 
+import Crypto.Field
 import Crypto.Field.Fp
 import Crypto.Field.Fp.Test
 
@@ -20,11 +21,16 @@ import Crypto.EllipticCurve.ECDSA.Test
 import Crypto.EllipticCurve.ECIES
 import Crypto.EllipticCurve.ECIES.Test
 
+import Crypto.EllipticCurve.HTC
+import Crypto.EllipticCurve.HTC.Test
+
 import Crypto.EllipticCurve.Schnorr
 import Crypto.EllipticCurve.Schnorr.Test
 
 import Crypto.EllipticCurve.TSS
 import Crypto.EllipticCurve.TSS.Test
+
+import Crypto.EllipticCurve.VRF
 
 import Crypto.Hash
 import Crypto.Hash.Test

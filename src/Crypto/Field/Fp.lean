@@ -1,3 +1,4 @@
+import Crypto.Field
 import Mathlib.Control.Random
 
 
@@ -133,6 +134,25 @@ end NonZeroFp
 
 instance : HDiv (Fp p) (NonZeroFp p) (Fp p) where
   hDiv x y := x * y.inverse
+
+
+namespace Fp
+
+  def isSquare (x : Fp p) : Prop :=
+    match x^((p - 1) / 2) with
+    | Fp.mkUnsafe 0 => True
+    | Fp.mkUnsafe 1 => True
+    | _             => False
+
+  def Is3Mod4 (p : Nat) : Prop := p % 4 = 3
+
+  -- FIXME: Add a comprehensive set of instances.
+  instance iSqrt3Mod4 {p : Nat} (_ : Fp.Is3Mod4 p) : Sqrt (Fp p) where
+    sqrt (x : Fp p) :=
+      let c1 : Nat := (p + 1) / 4
+      x^c1
+
+end Fp
 
 
 end Crypto.Field
