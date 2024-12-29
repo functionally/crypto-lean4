@@ -13,8 +13,6 @@ open LSpec
 namespace Crypto.EllipticCurve.HTC.Test
 
 
--- https://asecuritysite.com/hash/hash_to_ecc
-
 abbrev p1 := 43
 abbrev F1 := Fp p1
 def hasSqrt1 : Fp.Is3Mod4 p1 := rfl
@@ -45,21 +43,24 @@ instance : SlimCheck.SampleableExt F :=
 #lspec group "Map to point"
   $ group "tryAndIncrement"
     (
-      test "y^2=x^3+7, p = 43, x = 10" (
-        let expected : EllipticCurve.Point ec1 := EllipticCurve.Point.mk 12 31
-        MapToCurve.tryAndIncrement 10 = expected
-      )
-    $ test "y^2=x^3+7, p = 43, x = 12" (
-        let expected : EllipticCurve.Point ec1 := EllipticCurve.Point.mk 12 31
-        MapToCurve.tryAndIncrement 12 = expected
-      )
-    $ test "y^2=x^3+7, p = 10099, x = 1032" (
-        let expected : EllipticCurve.Point ec2 := EllipticCurve.Point.mk 1036 1112
-        MapToCurve.tryAndIncrement 1032 = expected
-      )
-    $ test "y^2=x^3+7, p = 10099, x = 1030" (
-        let expected : EllipticCurve.Point ec2 := EllipticCurve.Point.mk 1036 1112
-        MapToCurve.tryAndIncrement 1032 = expected
+      group "https://asecuritysite.com/hash/hash_to_ecc"
+      (
+        test "y^2=x^3+7, p = 43, x = 10" (
+          let expected : EllipticCurve.Point ec1 := EllipticCurve.Point.mk 12 31
+          MapToCurve.tryAndIncrement 10 = expected
+        )
+      $ test "y^2=x^3+7, p = 43, x = 12" (
+          let expected : EllipticCurve.Point ec1 := EllipticCurve.Point.mk 12 31
+          MapToCurve.tryAndIncrement 12 = expected
+        )
+      $ test "y^2=x^3+7, p = 10099, x = 1032" (
+          let expected : EllipticCurve.Point ec2 := EllipticCurve.Point.mk 1036 1112
+          MapToCurve.tryAndIncrement 1032 = expected
+        )
+      $ test "y^2=x^3+7, p = 10099, x = 1030" (
+          let expected : EllipticCurve.Point ec2 := EllipticCurve.Point.mk 1036 1112
+          MapToCurve.tryAndIncrement 1032 = expected
+        )
       )
     $ check "On curve" (
         ∀ x : F,

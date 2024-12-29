@@ -31,6 +31,7 @@ import Crypto.EllipticCurve.TSS
 import Crypto.EllipticCurve.TSS.Test
 
 import Crypto.EllipticCurve.VRF
+import Crypto.EllipticCurve.VRF.Test
 
 import Crypto.Hash
 import Crypto.Hash.Test

@@ -24,7 +24,7 @@ def prove [RandomGen gen] [Monad m] (htc : Point ec → α → Point ec) (commit
     let Z := kp.prv * H
     let r ← Random.random
     let RB := r * g.G
-    let RH := r * g.G
+    let RH := r * H
     let c := commit H Z RB RH
     let s := r + kp.prv * c
     pure ⟨ Z , c , s ⟩
