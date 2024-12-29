@@ -33,6 +33,9 @@ namespace EllipticCurve
   def wellFormed' (ec : EllipticCurve F) : Bool :=
     4 * ec.a^3 + 27 * ec.b^2 != 0
 
+  def residue (ec : EllipticCurve F) (x : F) : F :=
+    x^3 + ec.a * x + ec.b
+
 
   inductive Point (ec : EllipticCurve F) where
   | mk : F → F → Point ec
@@ -54,11 +57,11 @@ namespace EllipticCurve
 
     def onCurve : Point (ec : EllipticCurve F) → Prop
     | Point.infinity => True
-    | Point.mk x y => y^2 = x^3 + ec.a * x + ec.b
+    | Point.mk x y => y^2 = residue ec x
 
     def onCurve' : Point (ec : EllipticCurve F) → Bool
     | Point.infinity => true
-    | Point.mk x y => y^2 == x^3 + ec.a * x + ec.b
+    | Point.mk x y => y^2 == residue ec x
 
   end Point
 

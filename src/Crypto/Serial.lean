@@ -80,7 +80,7 @@ namespace Serial
   def natToBytes : Nat → ByteArray :=
     ByteArray.mk ∘ Words.toWords
 
-  def BytesToNat : ByteArray → Nat
+  def bytesToNat : ByteArray → Nat
   | ⟨ x ⟩ =>  Words.fromWords x
 
   private def bytesToUInt32s (x : Array UInt8) : Array UInt32 :=
