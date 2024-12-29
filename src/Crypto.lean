@@ -1,4 +1,6 @@
 
+import Crypto.API
+
 import Crypto.Field.Fp
 import Crypto.Field.Fp.Test
 
