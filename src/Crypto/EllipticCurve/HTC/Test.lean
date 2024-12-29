@@ -18,19 +18,19 @@ namespace Crypto.EllipticCurve.HTC.Test
 abbrev p1 := 43
 abbrev F1 := Fp p1
 def hasSqrt1 : Fp.Is3Mod4 p1 := rfl
-instance iSqrt1 : Sqrt F1 := Fp.iSqrt3Mod4 hasSqrt1
+instance iSqrt1 : Sqrt F1 := Fp.instSqrt3Mod4 hasSqrt1
 def ec1 : EllipticCurve (Fp p1) := ⟨ 0, 7 ⟩
 
 abbrev p2 := 10099
 abbrev F2 := Fp p2
 def hasSqrt2 : Fp.Is3Mod4 p2 := rfl
-instance iSqrt2 : Sqrt F2 := Fp.iSqrt3Mod4 hasSqrt2
+instance iSqrt2 : Sqrt F2 := Fp.instSqrt3Mod4 hasSqrt2
 def ec2 : EllipticCurve (Fp p2) := ⟨ 0, 7 ⟩
 
 abbrev p := Secp256k1.p
 abbrev F := Secp256k1.F
 theorem hasSqrt : Fp.Is3Mod4 p := rfl
-instance iSqrt : Sqrt F := Fp.iSqrt3Mod4 hasSqrt
+instance iSqrt : Sqrt F := Fp.instSqrt3Mod4 hasSqrt
 def ec := Secp256k1.curve
 
 instance : SlimCheck.Shrinkable F where

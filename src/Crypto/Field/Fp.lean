@@ -147,7 +147,7 @@ namespace Fp
   def Is3Mod4 (p : Nat) : Prop := p % 4 = 3
 
   -- FIXME: Add a comprehensive set of instances.
-  instance iSqrt3Mod4 {p : Nat} (_ : Fp.Is3Mod4 p) : Sqrt (Fp p) where
+  instance instSqrt3Mod4 {p : Nat} (_ : Fp.Is3Mod4 p) : Sqrt (Fp p) where
     sqrt (x : Fp p) :=
       let c1 : Nat := (p + 1) / 4
       x^c1
